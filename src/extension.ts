@@ -26,22 +26,6 @@ export function activate(context: vscode.ExtensionContext) {
       panelManager.postToActive({ type: 'toggleTOC' });
     }),
 
-    vscode.commands.registerCommand('mdReader.cycleTheme', () => {
-      panelManager.cycleTheme();
-    }),
-
-    vscode.commands.registerCommand('mdReader.toggleScrollSync', () => {
-      panelManager.toggleScrollSync();
-    }),
-
-    vscode.commands.registerCommand('mdReader.pickWidth', () => {
-      panelManager.pickWidth();
-    }),
-
-    vscode.commands.registerCommand('mdReader.pickBlueLightFilter', () => {
-      panelManager.pickBlueLightFilter();
-    }),
-
     vscode.commands.registerCommand('mdReader.refresh', () => {
       panelManager.refreshActive();
     }),
@@ -50,12 +34,8 @@ export function activate(context: vscode.ExtensionContext) {
       panelManager.refreshAll();
     }),
 
-    vscode.commands.registerCommand('mdReader.pickFontFamily', () => {
-      panelManager.pickFontFamily();
-    }),
-
-    vscode.commands.registerCommand('mdReader.pickFontSize', () => {
-      panelManager.pickFontSize();
+    vscode.commands.registerCommand('mdReader.toggleSettings', () => {
+      panelManager.toggleSettings();
     })
   );
 

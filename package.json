@@ -49,39 +49,9 @@
         "category": "MD Reader"
       },
       {
-        "command": "mdReader.cycleTheme",
-        "title": "Cycle Theme",
-        "icon": "$(symbol-color)",
-        "category": "MD Reader"
-      },
-      {
-        "command": "mdReader.pickFontFamily",
-        "title": "Pick Font Family",
-        "icon": "$(symbol-string)",
-        "category": "MD Reader"
-      },
-      {
-        "command": "mdReader.pickFontSize",
-        "title": "Pick Font Size",
-        "icon": "$(text-size)",
-        "category": "MD Reader"
-      },
-      {
-        "command": "mdReader.toggleScrollSync",
-        "title": "Toggle Scroll Sync",
-        "icon": "$(link)",
-        "category": "MD Reader"
-      },
-      {
-        "command": "mdReader.pickWidth",
-        "title": "Pick Reading Width",
-        "icon": "$(layout-centered)",
-        "category": "MD Reader"
-      },
-      {
-        "command": "mdReader.pickBlueLightFilter",
-        "title": "Eye Care Intensity (Blue Light Filter)",
-        "icon": "$(eye)",
+        "command": "mdReader.toggleSettings",
+        "title": "MD Reader Settings",
+        "icon": "$(gear)",
         "category": "MD Reader"
       },
       {
@@ -105,34 +75,9 @@
           "group": "navigation@1"
         },
         {
-          "command": "mdReader.cycleTheme",
+          "command": "mdReader.toggleSettings",
           "when": "activeWebviewPanelId == 'mdReaderPanel'",
           "group": "navigation@2"
-        },
-        {
-          "command": "mdReader.pickFontFamily",
-          "when": "activeWebviewPanelId == 'mdReaderPanel'",
-          "group": "navigation@3"
-        },
-        {
-          "command": "mdReader.pickFontSize",
-          "when": "activeWebviewPanelId == 'mdReaderPanel'",
-          "group": "navigation@4"
-        },
-        {
-          "command": "mdReader.toggleScrollSync",
-          "when": "activeWebviewPanelId == 'mdReaderPanel'",
-          "group": "navigation@5"
-        },
-        {
-          "command": "mdReader.pickWidth",
-          "when": "activeWebviewPanelId == 'mdReaderPanel'",
-          "group": "navigation@6"
-        },
-        {
-          "command": "mdReader.pickBlueLightFilter",
-          "when": "activeWebviewPanelId == 'mdReaderPanel'",
-          "group": "navigation@7"
         },
         {
           "command": "mdReader.refresh",

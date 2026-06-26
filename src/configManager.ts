@@ -66,6 +66,11 @@ export class ConfigManager {
       .update('fontSize', fontSize, vscode.ConfigurationTarget.Global);
   }
 
+  async setLineHeight(height: number): Promise<void> {
+    await vscode.workspace.getConfiguration('mdReader')
+      .update('lineHeight', height, vscode.ConfigurationTarget.Global);
+  }
+
   nextTheme(current: Theme): Theme {
     const idx = THEMES.indexOf(current);
     return THEMES[(idx + 1) % THEMES.length];
