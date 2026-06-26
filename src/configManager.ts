@@ -15,6 +15,8 @@ export interface ReaderConfig {
   showTOC: boolean;
   codeTheme: string;
   scrollSync: boolean;
+  blueLightFilter: number;
+  openBeside: boolean;
 }
 
 export class ConfigManager {
@@ -28,7 +30,9 @@ export class ConfigManager {
       readingWidth: cfg.get<ReadingWidth>('readingWidth', 'medium'),
       showTOC:      cfg.get<boolean>('showTOC', true),
       codeTheme:    cfg.get<string>('codeTheme', 'github-dark'),
-      scrollSync:   cfg.get<boolean>('scrollSync', false),
+      scrollSync:   cfg.get<boolean>('scrollSync') ?? false,
+      blueLightFilter: cfg.get<number>('blueLightFilter') ?? 0,
+      openBeside:   cfg.get<boolean>('openBeside') ?? true,
     };
   }
 
@@ -45,6 +49,11 @@ export class ConfigManager {
   async setScrollSync(value: boolean): Promise<void> {
     await vscode.workspace.getConfiguration('mdReader')
       .update('scrollSync', value, vscode.ConfigurationTarget.Global);
+  }
+
+  async setBlueLightFilter(value: number): Promise<void> {
+    await vscode.workspace.getConfiguration('mdReader')
+      .update('blueLightFilter', value, vscode.ConfigurationTarget.Global);
   }
 
   async setFontFamily(fontFamily: string): Promise<void> {

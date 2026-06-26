@@ -38,6 +38,10 @@ export function activate(context: vscode.ExtensionContext) {
       panelManager.pickWidth();
     }),
 
+    vscode.commands.registerCommand('mdReader.pickBlueLightFilter', () => {
+      panelManager.pickBlueLightFilter();
+    }),
+
     vscode.commands.registerCommand('mdReader.refresh', () => {
       panelManager.refreshActive();
     }),

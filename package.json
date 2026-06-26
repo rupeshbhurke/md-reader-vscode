@@ -79,6 +79,12 @@
         "category": "MD Reader"
       },
       {
+        "command": "mdReader.pickBlueLightFilter",
+        "title": "Eye Care Intensity (Blue Light Filter)",
+        "icon": "$(eye)",
+        "category": "MD Reader"
+      },
+      {
         "command": "mdReader.refresh",
         "title": "Refresh Reader",
         "icon": "$(refresh)",
@@ -124,9 +130,14 @@
           "group": "navigation@6"
         },
         {
-          "command": "mdReader.refresh",
+          "command": "mdReader.pickBlueLightFilter",
           "when": "activeWebviewPanelId == 'mdReaderPanel'",
           "group": "navigation@7"
+        },
+        {
+          "command": "mdReader.refresh",
+          "when": "activeWebviewPanelId == 'mdReaderPanel'",
+          "group": "navigation@8"
         }
       ],
       "editor/title/context": [
@@ -227,6 +238,13 @@
             "vs2015"
           ],
           "description": "Syntax highlighting theme for code blocks."
+        },
+        "mdReader.blueLightFilter": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Opacity percentage (0-100) of the warm amber Eye Care overlay. 0 = Off."
         },
         "mdReader.autoRefresh": {
           "type": "boolean",

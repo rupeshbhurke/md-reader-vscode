@@ -164,6 +164,22 @@ body {
   border-radius: 0 2px 2px 0;
 }
 
+/* ── Blue Light Filter (Eye Care) ──────────────────────────────────────────── */
+body.blue-light-filter::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* A warm, amber overlay to reduce blue spectrum */
+  background-color: rgba(255, 170, 0, var(--eye-care-opacity, 0.15));
+  /* multiply blends the amber over the underlying colors effectively */
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 9999;
+}
+
 /* ── Main layout ───────────────────────────────────────────────────────────── */
 #reader-main {
   min-height: 100vh;

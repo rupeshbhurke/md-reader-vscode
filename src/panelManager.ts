@@ -164,6 +164,49 @@ export class PanelManager {
     );
   }
 
+  async pickBlueLightFilter(): Promise<void> {
+    const current = this.config.get().blueLightFilter;
+    
+    const PRESETS = [
+      { label: 'Off', value: 0, description: '0%' },
+      { label: 'Mild', value: 8, description: '8%' },
+      { label: 'Moderate', value: 15, description: '15%' },
+      { label: 'Strong', value: 25, description: '25%' },
+      { label: 'Intense', value: 40, description: '40%' }
+    ];
+
+    const items: vscode.QuickPickItem[] = [];
+    
+    const isCustom = !PRESETS.some(p => p.value === current);
+    if (isCustom) {
+      items.push({ label: `• Custom`, description: `${current}%` });
+    }
+
+    for (const p of PRESETS) {
+      items.push({
+        label: p.value === current ? `• ${p.label}` : p.label,
+        description: p.description
+      });
+    }
+
+    const picked = await vscode.window.showQuickPick(items, {
+      placeHolder: 'Select Eye Care (Blue Light Filter) Intensity'
+    });
+
+    if (picked) {
+      if (picked.label.includes('Custom')) return; // No-op if they pick their custom value again
+      
+      const newLabel = picked.label.replace(/^• /, '');
+      const preset = PRESETS.find(p => p.label === newLabel);
+      if (preset !== undefined) {
+        await this.config.setBlueLightFilter(preset.value);
+        vscode.window.setStatusBarMessage(
+          `MD Reader: Eye Care → ${preset.value === 0 ? 'OFF' : preset.value + '%'}`, 2000
+        );
+      }
+    }
+  }
+
   /**
    * Register the editor → reader scroll listener.
    * Call once from extension.ts after creating PanelManager.

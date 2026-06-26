@@ -112,6 +112,15 @@
       readerMain.style.paddingLeft  = widthKey === 'full' ? '16px' : '32px';
       readerMain.style.paddingRight = widthKey === 'full' ? '16px' : '32px';
     }
+
+    // Blue light filter (Eye Care)
+    if (typeof cfg.blueLightFilter === 'number' && cfg.blueLightFilter > 0) {
+      document.body.style.setProperty('--eye-care-opacity', (cfg.blueLightFilter / 100).toString());
+      document.body.classList.add('blue-light-filter');
+    } else {
+      document.body.style.removeProperty('--eye-care-opacity');
+      document.body.classList.remove('blue-light-filter');
+    }
   }
 
   // ── Render content ──────────────────────────────────────────────────────────
