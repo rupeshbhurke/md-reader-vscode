@@ -1,0 +1,251 @@
+{
+  "name": "md-reader",
+  "displayName": "MD Reader",
+  "description": "A reading-focused, fully customizable Markdown viewer with independent multi-document support.",
+  "version": "0.1.0",
+  "publisher": "md-reader-oss",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/md-reader/md-reader-vscode"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "markdown",
+    "reader",
+    "preview",
+    "reading",
+    "document"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mdReader.open",
+        "title": "Open in MD Reader",
+        "icon": "$(book)",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.openNewColumn",
+        "title": "Open in MD Reader (New Column)",
+        "icon": "$(split-horizontal)",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.toggleTOC",
+        "title": "Toggle Table of Contents",
+        "icon": "$(list-tree)",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.cycleTheme",
+        "title": "Cycle Theme",
+        "icon": "$(symbol-color)",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.pickFontFamily",
+        "title": "Pick Font Family",
+        "icon": "$(symbol-string)",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.pickFontSize",
+        "title": "Pick Font Size",
+        "icon": "$(text-size)",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.toggleScrollSync",
+        "title": "Toggle Scroll Sync",
+        "icon": "$(link)",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.pickWidth",
+        "title": "Pick Reading Width",
+        "icon": "$(layout-centered)",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.refresh",
+        "title": "Refresh Reader",
+        "icon": "$(refresh)",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.refreshAll",
+        "title": "Refresh All Reader Panels",
+        "icon": "$(sync)",
+        "category": "MD Reader"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "mdReader.toggleTOC",
+          "when": "activeWebviewPanelId == 'mdReaderPanel'",
+          "group": "navigation@1"
+        },
+        {
+          "command": "mdReader.cycleTheme",
+          "when": "activeWebviewPanelId == 'mdReaderPanel'",
+          "group": "navigation@2"
+        },
+        {
+          "command": "mdReader.pickFontFamily",
+          "when": "activeWebviewPanelId == 'mdReaderPanel'",
+          "group": "navigation@3"
+        },
+        {
+          "command": "mdReader.pickFontSize",
+          "when": "activeWebviewPanelId == 'mdReaderPanel'",
+          "group": "navigation@4"
+        },
+        {
+          "command": "mdReader.toggleScrollSync",
+          "when": "activeWebviewPanelId == 'mdReaderPanel'",
+          "group": "navigation@5"
+        },
+        {
+          "command": "mdReader.pickWidth",
+          "when": "activeWebviewPanelId == 'mdReaderPanel'",
+          "group": "navigation@6"
+        },
+        {
+          "command": "mdReader.refresh",
+          "when": "activeWebviewPanelId == 'mdReaderPanel'",
+          "group": "navigation@7"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "mdReader.open",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "mdReader.open",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "mdReader.open",
+          "when": "editorLangId == markdown",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MD Reader",
+      "properties": {
+        "mdReader.theme": {
+          "type": "string",
+          "default": "auto",
+          "enum": ["auto", "light", "dark", "sepia"],
+          "enumDescriptions": [
+            "Follow VS Code's color theme",
+            "Light reading theme",
+            "Dark reading theme",
+            "Warm sepia reading theme"
+          ],
+          "description": "Color theme for the reader panel."
+        },
+        "mdReader.fontFamily": {
+          "type": "string",
+          "default": "Georgia, 'Times New Roman', serif",
+          "description": "Body font family for reading content."
+        },
+        "mdReader.fontSize": {
+          "type": "number",
+          "default": 17,
+          "minimum": 10,
+          "maximum": 72,
+          "description": "Base font size in pixels."
+        },
+        "mdReader.lineHeight": {
+          "type": "number",
+          "default": 1.85,
+          "minimum": 1.2,
+          "maximum": 3.0,
+          "description": "Line height multiplier for body text."
+        },
+        "mdReader.readingWidth": {
+          "type": "string",
+          "default": "medium",
+          "enum": ["narrow", "medium", "wide", "wider", "ultra", "full"],
+          "enumDescriptions": [
+            "Narrow column (640px) — focused reading",
+            "Medium column (760px) — balanced default",
+            "Wide column (960px) — more content visible",
+            "Wider column (1100px) — for large monitors",
+            "Ultra column (1400px) — maximum fixed width",
+            "Full window width (100%) — no side margins"
+          ],
+          "description": "Width of the reading column."
+        },
+        "mdReader.showTOC": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show table of contents overlay when the TOC button is clicked."
+        },
+        "mdReader.codeTheme": {
+          "type": "string",
+          "default": "github-dark",
+          "enum": ["github-dark", "github-light", "monokai", "atom-one-dark", "vs2015"],
+          "description": "Syntax highlighting theme for code blocks."
+        },
+        "mdReader.autoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically refresh the reader when the file is saved."
+        },
+        "mdReader.scrollSync": {
+          "type": "boolean",
+          "default": false,
+          "description": "Synchronize scroll position between the editor and reader panel."
+        },
+        "mdReader.openBeside": {
+          "type": "boolean",
+          "default": true,
+          "description": "Open the reader beside the editor (split view). Set to false to open in a new full-width column."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --minify",
+    "compile": "tsc -p ./",
+    "watch": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --watch",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@types/marked": "^6.0.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "highlight.js": "^11.9.0",
+    "marked": "^11.1.0",
+    "marked-gfm-heading-id": "^3.1.3"
+  }
+}
