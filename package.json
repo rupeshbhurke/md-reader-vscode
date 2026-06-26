@@ -157,7 +157,12 @@
         "mdReader.theme": {
           "type": "string",
           "default": "auto",
-          "enum": ["auto", "light", "dark", "sepia"],
+          "enum": [
+            "auto",
+            "light",
+            "dark",
+            "sepia"
+          ],
           "enumDescriptions": [
             "Follow VS Code's color theme",
             "Light reading theme",
@@ -182,13 +187,20 @@
           "type": "number",
           "default": 1.85,
           "minimum": 1.2,
-          "maximum": 3.0,
+          "maximum": 3,
           "description": "Line height multiplier for body text."
         },
         "mdReader.readingWidth": {
           "type": "string",
           "default": "medium",
-          "enum": ["narrow", "medium", "wide", "wider", "ultra", "full"],
+          "enum": [
+            "narrow",
+            "medium",
+            "wide",
+            "wider",
+            "ultra",
+            "full"
+          ],
           "enumDescriptions": [
             "Narrow column (640px) — focused reading",
             "Medium column (760px) — balanced default",
@@ -207,7 +219,13 @@
         "mdReader.codeTheme": {
           "type": "string",
           "default": "github-dark",
-          "enum": ["github-dark", "github-light", "monokai", "atom-one-dark", "vs2015"],
+          "enum": [
+            "github-dark",
+            "github-light",
+            "monokai",
+            "atom-one-dark",
+            "vs2015"
+          ],
           "description": "Syntax highlighting theme for code blocks."
         },
         "mdReader.autoRefresh": {
@@ -237,9 +255,10 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
+    "@types/marked": "^6.0.0",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
-    "@types/marked": "^6.0.0",
+    "@vscode/vsce": "^3.9.2",
     "esbuild": "^0.20.0",
     "typescript": "^5.3.0"
   },
