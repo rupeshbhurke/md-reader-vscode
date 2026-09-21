@@ -1,16 +1,6 @@
-import { marked } from 'marked';
-import { gfmHeadingId } from 'marked-gfm-heading-id';
+import { Marked, Renderer } from 'marked';
+import GithubSlugger from 'github-slugger';
 import hljs from 'highlight.js';
-
-// ── Configure marked ──────────────────────────────────────────────────────────
-
-marked.use(gfmHeadingId());
-
-marked.use({
-  renderer: buildRenderer(),
-  gfm: true,
-  breaks: false,
-});
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
@@ -27,32 +17,57 @@ export interface TocEntry {
 
 /**
  * Convert raw Markdown text into HTML + a TOC structure.
+ *
+ * `marked` extensions registered via `.use()` stack additively on an
+ * instance and are never un-registered. The single `marked` instance below
+ * is configured exactly once at module load — never inside this function —
+ * so repeated calls don't leak duplicate renderer/extension registrations.
+ *
+ * TOC collection uses module-level state (`currentToc` / `slugger`) reset
+ * immediately before each `marked.parse()` call. This is safe because a
+ * single `parse()` call runs its renderer callbacks synchronously (no
+ * `await` interleaves mid-parse), so concurrent `renderMarkdown()` calls
+ * for different documents can't interleave their TOC state.
  */
 export async function renderMarkdown(markdown: string): Promise<RenderedDocument> {
-  const toc: TocEntry[] = [];
-
-  // Intercept headings to build TOC
-  const tocRenderer = {
-    heading(text: string, level: number, raw: string): string {
-      const id = slugify(raw);
-      if (level <= 3) {
-        toc.push({ level, text: stripHtml(text), id });
-      }
-      return `<h${level} id="${id}">${text}</h${level}>\n`;
-    }
-  };
-
-  marked.use({ renderer: tocRenderer as any });
+  currentToc = [];
+  slugger.reset();
 
   const html = await marked.parse(markdown);
 
-  return { html, toc };
+  return { html, toc: currentToc };
 }
+
+// ── Marked instance (configured once) ──────────────────────────────────────────
+
+let currentToc: TocEntry[] = [];
+const slugger = new GithubSlugger();
+
+const marked = new Marked({
+  renderer: buildRenderer(),
+  gfm: true,
+  breaks: false,
+});
 
 // ── Renderer ──────────────────────────────────────────────────────────────────
 
 function buildRenderer() {
-  const renderer = new marked.Renderer();
+  const renderer = new Renderer();
+
+  // Headings — GitHub-style unique anchor ids + TOC collection (levels 1-3)
+  renderer.heading = (text: string, level: number, raw: string): string => {
+    const cleaned = raw
+      .toLowerCase()
+      .trim()
+      .replace(/<[!\/a-z].*?>/gi, '');
+    const id = slugger.slug(cleaned);
+
+    if (level <= 3) {
+      currentToc.push({ level, text: stripHtml(text), id });
+    }
+
+    return `<h${level} id="${id}">${text}</h${level}>\n`;
+  };
 
   // Code blocks — syntax highlighting + copy button + language label
   renderer.code = (code: string, language: string | undefined): string => {
@@ -104,14 +119,6 @@ function buildRenderer() {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 function escapeHtml(str: string): string {
   return str
