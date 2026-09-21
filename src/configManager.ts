@@ -19,56 +19,46 @@ export interface ReaderConfig {
   openBeside: boolean;
 }
 
+/**
+ * Settings the settings-drawer webview is allowed to write back via an
+ * `updateSetting` message. Deliberately excludes fields with no drawer
+ * control (showTOC, codeTheme, openBeside) — those are only ever set
+ * through the Settings UI (`vscode.workspace.getConfiguration`) or command
+ * palette, never from webview-supplied input.
+ */
+export const SETTABLE_KEYS: readonly (keyof ReaderConfig)[] = [
+  'theme', 'fontFamily', 'fontSize', 'lineHeight',
+  'readingWidth', 'scrollSync', 'blueLightFilter',
+];
+
+/** Defaults for every setting, keyed by its ReaderConfig field name (not its `mdReader.` id). */
+const DEFAULTS: ReaderConfig = {
+  theme: 'auto',
+  fontFamily: "Georgia, 'Times New Roman', serif",
+  fontSize: 17,
+  lineHeight: 1.85,
+  readingWidth: 'medium',
+  showTOC: true,
+  codeTheme: 'github-dark',
+  scrollSync: false,
+  blueLightFilter: 0,
+  openBeside: true,
+};
+
 export class ConfigManager {
   get(): ReaderConfig {
     const cfg = vscode.workspace.getConfiguration('mdReader');
-    return {
-      theme:        cfg.get<Theme>('theme', 'auto'),
-      fontFamily:   cfg.get<string>('fontFamily', "Georgia, 'Times New Roman', serif"),
-      fontSize:     cfg.get<number>('fontSize', 17),
-      lineHeight:   cfg.get<number>('lineHeight', 1.85),
-      readingWidth: cfg.get<ReadingWidth>('readingWidth', 'medium'),
-      showTOC:      cfg.get<boolean>('showTOC', true),
-      codeTheme:    cfg.get<string>('codeTheme', 'github-dark'),
-      scrollSync:   cfg.get<boolean>('scrollSync') ?? false,
-      blueLightFilter: cfg.get<number>('blueLightFilter') ?? 0,
-      openBeside:   cfg.get<boolean>('openBeside') ?? true,
-    };
+    const result = {} as ReaderConfig;
+    for (const key of Object.keys(DEFAULTS) as (keyof ReaderConfig)[]) {
+      (result as any)[key] = cfg.get(key, DEFAULTS[key]);
+    }
+    return result;
   }
 
-  async setTheme(theme: Theme): Promise<void> {
+  /** Persist a single setting. `key` is the ReaderConfig field name, which matches its `mdReader.<key>` id. */
+  async set<K extends keyof ReaderConfig>(key: K, value: ReaderConfig[K]): Promise<void> {
     await vscode.workspace.getConfiguration('mdReader')
-      .update('theme', theme, vscode.ConfigurationTarget.Global);
-  }
-
-  async setWidth(width: ReadingWidth): Promise<void> {
-    await vscode.workspace.getConfiguration('mdReader')
-      .update('readingWidth', width, vscode.ConfigurationTarget.Global);
-  }
-
-  async setScrollSync(value: boolean): Promise<void> {
-    await vscode.workspace.getConfiguration('mdReader')
-      .update('scrollSync', value, vscode.ConfigurationTarget.Global);
-  }
-
-  async setBlueLightFilter(value: number): Promise<void> {
-    await vscode.workspace.getConfiguration('mdReader')
-      .update('blueLightFilter', value, vscode.ConfigurationTarget.Global);
-  }
-
-  async setFontFamily(fontFamily: string): Promise<void> {
-    await vscode.workspace.getConfiguration('mdReader')
-      .update('fontFamily', fontFamily, vscode.ConfigurationTarget.Global);
-  }
-
-  async setFontSize(fontSize: number): Promise<void> {
-    await vscode.workspace.getConfiguration('mdReader')
-      .update('fontSize', fontSize, vscode.ConfigurationTarget.Global);
-  }
-
-  async setLineHeight(height: number): Promise<void> {
-    await vscode.workspace.getConfiguration('mdReader')
-      .update('lineHeight', height, vscode.ConfigurationTarget.Global);
+      .update(key, value, vscode.ConfigurationTarget.Global);
   }
 
   nextTheme(current: Theme): Theme {
