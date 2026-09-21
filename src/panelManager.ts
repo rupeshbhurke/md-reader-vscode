@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { ConfigManager, Theme, ReadingWidth } from './configManager';
+import { ConfigManager, ReaderConfig, SETTABLE_KEYS } from './configManager';
 import { renderMarkdown } from './markdownRenderer';
 
 export class PanelManager {
@@ -77,14 +77,8 @@ export class PanelManager {
         // Reader scrolled → sync the editor
         this.syncEditorScroll(key, msg.percentage);
       } else if (msg.type === 'updateSetting') {
-        switch (msg.key) {
-          case 'theme': await this.config.setTheme(msg.value); break;
-          case 'fontFamily': await this.config.setFontFamily(msg.value); break;
-          case 'fontSize': await this.config.setFontSize(msg.value); break;
-          case 'lineHeight': await this.config.setLineHeight(msg.value); break;
-          case 'readingWidth': await this.config.setWidth(msg.value); break;
-          case 'scrollSync': await this.config.setScrollSync(msg.value); break;
-          case 'blueLightFilter': await this.config.setBlueLightFilter(msg.value); break;
+        if ((SETTABLE_KEYS as readonly string[]).includes(msg.key)) {
+          await this.config.set(msg.key as keyof ReaderConfig, msg.value);
         }
       }
     });
