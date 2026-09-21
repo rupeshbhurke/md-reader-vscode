@@ -23,6 +23,16 @@
   const readerContent = document.getElementById('reader-content');
   const readerMain    = document.getElementById('reader-main');
 
+  const findInput  = document.getElementById('find-input');
+  const findCount  = document.getElementById('find-count');
+  const findNext   = document.getElementById('find-next');
+  const findPrev   = document.getElementById('find-prev');
+  const findCase   = document.getElementById('find-case');
+  const findClose  = document.getElementById('find-close');
+
+  const shortcutsOverlay  = document.getElementById('shortcuts-overlay');
+  const shortcutsBackdrop = document.getElementById('shortcuts-backdrop');
+
   // ── State ───────────────────────────────────────────────────────────────────
   let tocOpen = false;
   let currentConfig = {};
@@ -33,6 +43,20 @@
   let isReceivingScroll  = false;   // true while we're programmatically scrolling
   let receiveScrollTimer = null;    // clears the flag after animation settles
   let sendScrollTimer    = null;    // debounce outbound scroll messages
+
+  // ── Find-in-document state ──────────────────────────────────────────────────
+  const highlightsSupported = typeof CSS !== 'undefined' && !!CSS.highlights && typeof Highlight !== 'undefined';
+  const matchHighlight  = highlightsSupported ? new Highlight() : null;
+  const activeHighlight = highlightsSupported ? new Highlight() : null;
+  if (highlightsSupported) {
+    CSS.highlights.set('md-find-match', matchHighlight);
+    CSS.highlights.set('md-find-active', activeHighlight);
+  }
+  let findMatches       = [];   // Range[]
+  let findIndex         = -1;
+  let findCaseSensitive = false;
+  let findDebounceTimer = null;
+  const FIND_MAX_MATCHES = 5000;
 
   // ── Width map ───────────────────────────────────────────────────────────────
   const WIDTH_MAP = {
@@ -62,6 +86,9 @@
         break;
       case 'toggleSettings':
         toggleSettings();
+        break;
+      case 'find':
+        openFindBar();
         break;
       case 'scrollTo':
         // Extension host is driving the scroll — suppress echo-back
@@ -343,6 +370,130 @@
   tocClose.addEventListener('click', closeTOC);
   tocBackdrop.addEventListener('click', closeTOC);
 
+  // ── Find in document ─────────────────────────────────────────────────────────
+  // Uses the CSS Custom Highlight API (no DOM mutation — code blocks, copy
+  // buttons etc. are untouched). If unavailable, the find bar still opens but
+  // matching silently no-ops (count stays 0/0) rather than throwing.
+  function openFindBar() {
+    document.body.classList.add('find-open');
+    findInput.focus();
+    findInput.select();
+    if (findInput.value) { runFind(findInput.value); }
+  }
+
+  function closeFindBar() {
+    document.body.classList.remove('find-open');
+    clearFindHighlights();
+    findMatches = [];
+    findIndex = -1;
+    updateFindCount();
+  }
+
+  function clearFindHighlights() {
+    if (matchHighlight) { matchHighlight.clear(); }
+    if (activeHighlight) { activeHighlight.clear(); }
+  }
+
+  function runFind(query) {
+    clearFindHighlights();
+    findMatches = [];
+    findIndex = -1;
+
+    if (!query || !highlightsSupported) {
+      updateFindCount();
+      return;
+    }
+
+    const needle = findCaseSensitive ? query : query.toLowerCase();
+    const walker = document.createTreeWalker(readerContent, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const parent = node.parentElement;
+        if (!parent || parent.closest('script, style, .copy-btn, .code-header')) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
+    let node;
+    while ((node = walker.nextNode()) && findMatches.length < FIND_MAX_MATCHES) {
+      const haystack = findCaseSensitive ? node.textContent : node.textContent.toLowerCase();
+      let from = 0;
+      let idx;
+      while ((idx = haystack.indexOf(needle, from)) !== -1 && findMatches.length < FIND_MAX_MATCHES) {
+        const range = new Range();
+        range.setStart(node, idx);
+        range.setEnd(node, idx + query.length);
+        findMatches.push(range);
+        matchHighlight.add(range);
+        from = idx + query.length;
+      }
+    }
+
+    updateFindCount();
+    if (findMatches.length > 0) { goToMatch(0); }
+  }
+
+  function goToMatch(index) {
+    if (findMatches.length === 0) { return; }
+    if (activeHighlight) { activeHighlight.clear(); }
+
+    findIndex = ((index % findMatches.length) + findMatches.length) % findMatches.length;
+    const range = findMatches[findIndex];
+    if (activeHighlight) { activeHighlight.add(range); }
+
+    // Scrolling here can trigger the same scroll-sync echo as any other
+    // programmatic scroll — suppress it the same way 'scrollTo' does.
+    isReceivingScroll = true;
+    clearTimeout(receiveScrollTimer);
+    const container = range.startContainer;
+    const el = container.nodeType === Node.TEXT_NODE ? container.parentElement : container;
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    receiveScrollTimer = setTimeout(() => { isReceivingScroll = false; }, 400);
+
+    updateFindCount();
+  }
+
+  function updateFindCount() {
+    findCount.textContent = findMatches.length > 0
+      ? `${findIndex + 1}/${findMatches.length}`
+      : '0/0';
+  }
+
+  findInput.addEventListener('input', () => {
+    clearTimeout(findDebounceTimer);
+    findDebounceTimer = setTimeout(() => runFind(findInput.value), 120);
+  });
+
+  findInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.shiftKey ? goToMatch(findIndex - 1) : goToMatch(findIndex + 1);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      closeFindBar();
+    }
+  });
+
+  findNext.addEventListener('click', () => goToMatch(findIndex + 1));
+  findPrev.addEventListener('click', () => goToMatch(findIndex - 1));
+  findClose.addEventListener('click', closeFindBar);
+  findCase.addEventListener('click', () => {
+    findCaseSensitive = !findCaseSensitive;
+    findCase.classList.toggle('active', findCaseSensitive);
+    if (findInput.value) { runFind(findInput.value); }
+  });
+
+  // ── Keyboard shortcuts help overlay ─────────────────────────────────────────
+  function toggleShortcutsHelp() {
+    document.body.classList.toggle('shortcuts-open');
+  }
+  function closeShortcutsHelp() {
+    document.body.classList.remove('shortcuts-open');
+  }
+  document.getElementById('shortcuts-close')?.addEventListener('click', closeShortcutsHelp);
+  shortcutsBackdrop?.addEventListener('click', closeShortcutsHelp);
+
   // ── Scroll: progress bar + TOC highlight + sync ─────────────────────────────
   let ticking = false;
 
@@ -402,10 +553,89 @@
   }
 
   // ── Keyboard shortcuts ───────────────────────────────────────────────────────
+  // Ctrl/Cmd+F is deliberately NOT handled here — it's registered as a VS Code
+  // command (mdReader.find) with its own keybinding, because the webview's
+  // guest page can't reliably claim a modifier chord ahead of the host's own
+  // keybinding dispatch. See panelManager.ts / extension.ts.
+  function scrollByAmount(delta) {
+    window.scrollBy({ top: delta, behavior: 'smooth' });
+    readerMain.scrollBy({ top: delta, behavior: 'smooth' });
+  }
+
+  function scrollToEdge(top) {
+    window.scrollTo({ top, behavior: 'smooth' });
+    readerMain.scrollTo({ top, behavior: 'smooth' });
+  }
+
+  function jumpHeading(direction) {
+    if (headingElements.length === 0) { return; }
+    let target = null;
+    if (direction > 0) {
+      target = headingElements.find(h => h.getBoundingClientRect().top > 90);
+    } else {
+      for (let i = headingElements.length - 1; i >= 0; i--) {
+        if (headingElements[i].getBoundingClientRect().top < -10) { target = headingElements[i]; break; }
+      }
+    }
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function nudgeFontSize(delta) {
+    const current = currentConfig.fontSize || 17;
+    const size = delta === 0 ? 17 : Math.min(72, Math.max(10, current + delta));
+    currentConfig.fontSize = size;
+
+    document.body.style.fontSize = size + 'px';
+    document.documentElement.style.setProperty('--reader-font-size', size + 'px');
+
+    const sizeInput = document.getElementById('set-size');
+    if (sizeInput) { sizeInput.value = size; }
+    const sizeDisplay = document.getElementById('val-size');
+    if (sizeDisplay) { sizeDisplay.textContent = size + 'px'; }
+
+    vscode.postMessage({ type: 'updateSetting', key: 'fontSize', value: size });
+  }
+
   document.addEventListener('keydown', (e) => {
-    // Escape closes TOC
-    if (e.key === 'Escape' && tocOpen) {
-      closeTOC();
+    // Escape closes whichever overlay is open, innermost first.
+    if (e.key === 'Escape') {
+      if (document.body.classList.contains('find-open')) { closeFindBar(); return; }
+      if (document.body.classList.contains('shortcuts-open')) { closeShortcutsHelp(); return; }
+      if (document.body.classList.contains('settings-open')) { toggleSettings(); return; }
+      if (tocOpen) { closeTOC(); return; }
+      return;
+    }
+
+    // Font-size zoom works everywhere, including while a field has focus.
+    if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+      e.preventDefault(); nudgeFontSize(1); return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+      e.preventDefault(); nudgeFontSize(-1); return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+      e.preventDefault(); nudgeFontSize(0); return;
+    }
+
+    // Everything below is single-key, reading-mode navigation — don't hijack
+    // typing in the find box or a settings control.
+    const inField = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName || '');
+    if (inField || e.ctrlKey || e.metaKey || e.altKey) { return; }
+
+    switch (e.key) {
+      case 'j': e.preventDefault(); scrollByAmount(80); break;
+      case 'k': e.preventDefault(); scrollByAmount(-80); break;
+      case ' ':
+        e.preventDefault();
+        scrollByAmount(e.shiftKey ? -window.innerHeight * 0.85 : window.innerHeight * 0.85);
+        break;
+      case 'g': e.preventDefault(); scrollToEdge(0); break;
+      case 'G': e.preventDefault(); scrollToEdge(document.body.scrollHeight); break;
+      case 'n': e.preventDefault(); jumpHeading(1); break;
+      case 'p': e.preventDefault(); jumpHeading(-1); break;
+      case 't': e.preventDefault(); toggleTOC(); break;
+      case 's': e.preventDefault(); toggleSettings(); break;
+      case '?': e.preventDefault(); toggleShortcutsHelp(); break;
     }
   });
 
