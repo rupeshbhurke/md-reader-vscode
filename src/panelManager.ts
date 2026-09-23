@@ -196,18 +196,25 @@ export class PanelManager {
     panel: vscode.WebviewPanel,
     document: vscode.TextDocument
   ): Promise<void> {
-    const { html, toc } = await renderMarkdown(document.getText());
+    const { html, toc, hasMermaid } = await renderMarkdown(document.getText());
     const cfg = this.config.get();
-    panel.webview.postMessage({ type: 'update', html, toc, config: cfg });
+    panel.webview.postMessage({ type: 'update', html, toc, hasMermaid, config: cfg });
   }
 
   private buildShell(webview: vscode.Webview): string {
     const webviewDir = path.join(this.context.extensionPath, 'src', 'webview');
+    const vendorDir = path.join(webviewDir, 'vendor');
     const cssUri = webview.asWebviewUri(
       vscode.Uri.file(path.join(webviewDir, 'reader.css'))
     );
     const jsUri = webview.asWebviewUri(
       vscode.Uri.file(path.join(webviewDir, 'reader.js'))
+    );
+    const katexCssUri = webview.asWebviewUri(
+      vscode.Uri.file(path.join(vendorDir, 'katex', 'katex.min.css'))
+    );
+    const mermaidJsUri = webview.asWebviewUri(
+      vscode.Uri.file(path.join(vendorDir, 'mermaid.min.js'))
     );
     const nonce = getNonce();
 
@@ -223,7 +230,15 @@ export class PanelManager {
              img-src ${webview.cspSource} https: data:;
              font-src ${webview.cspSource} https:;" />
   <link rel="stylesheet" href="${cssUri}" />
+  <link rel="stylesheet" href="${katexCssUri}" />
   <title>MD Reader</title>
+  <script nonce="${nonce}">
+    // mermaid.min.js is loaded lazily (see reader.js) only when a document
+    // actually contains a fenced mermaid code block — most documents don't,
+    // and the file is ~3.5MB. Same nonce as reader.js/reader.css so the
+    // dynamically created script tag is allowed under the CSP above.
+    window.__mdReaderVendor = { mermaidJsUri: ${JSON.stringify(mermaidJsUri.toString())}, nonce: ${JSON.stringify(nonce)} };
+  </script>
 </head>
 <body>
   <!-- Settings Drawer -->
