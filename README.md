@@ -85,55 +85,6 @@ All settings are under `mdReader.*` in VS Code Settings (`Ctrl+,`):
 
 Right-clicking a `.md` file in the **Explorer** or **editor tab** also shows **Open in MD Reader**.
 
-## Android App
-
-The project includes a standalone companion Android application located in the [android-app](file:///c:/RB/Workarea/Repo/RnD/md-reader-vscode/android-app) directory. Built with Vite, TypeScript, and [Capacitor](https://capacitorjs.com/), it brings the same reading-focused Markdown previewing experience to mobile devices.
-
-### Features
-- 📱 **Mobile-Optimized Interface** — Fast, lightweight, and fully responsive layout tailored for phones and tablets.
-- 📂 **Local File Viewer** — Tap the Floating Action Button (FAB) to open and read any `.md` file from your device storage.
-- 🎨 **Reading Customization** — Adjust font size (10px–72px), line height, choose from serif/sans-serif/monospace font families, and toggle themes (Light, Dark, Sepia, or Auto/System default).
-- 👁️ **Eye Care Mode** — Built-in blue light filter overlay to reduce eye strain when reading at night.
-- 📋 **Floating Table of Contents** — Easily navigate long documents via the floating TOC menu.
-- 📊 **Reading Progress** — Top progress bar tracks your scroll position in real-time.
-- 💻 **Code Highlighting** — Syntactical highlighting for code blocks with one-click copy functionality.
-- 💾 **Persistent Settings** — Your preferences are automatically saved on the device.
-
-### Development Setup
-
-To build and run the Android app locally:
-
-1. **Install Dependencies**:
-   Ensure you have Node.js and Android Studio installed. Then navigate to the directory and install dependencies:
-   ```bash
-   cd android-app
-   npm install
-   ```
-
-2. **Run in Browser (Dev Mode)**:
-   You can run the web portion of the app in your browser:
-   ```bash
-   npm run dev
-   ```
-
-3. **Build the App**:
-   Compile the TypeScript files and build the web assets:
-   ```bash
-   npm run build
-   ```
-
-4. **Sync with Android**:
-   Copy the built assets into the Android native project:
-   ```bash
-   npx cap sync
-   ```
-
-5. **Open in Android Studio**:
-   Open the native Android project folder to build, debug, or deploy the `.apk` using Android Studio:
-   ```bash
-   npx cap open android
-   ```
-
 ## Windows App
 
 The project also includes a standalone companion desktop application for Windows located in the [windows-app](file:///c:/RB/Workarea/Repo/RnD/md-reader-vscode/windows-app) directory. Built with Electron and Vite, it brings the Markdown previewing experience to your desktop with native OS integration.
