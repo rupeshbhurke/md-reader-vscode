@@ -176,8 +176,8 @@ export class PanelManager {
     );
     if (!document) { return; }
 
-    const { html, hasMermaid } = await renderMarkdown(document.getText());
     const cfg = this.config.get();
+    const { html, hasMermaid } = await renderMarkdown(document.getText(), cfg.frontMatter);
     const embedImages = vscode.workspace.getConfiguration('mdReader')
       .get<boolean>('export.embedImages', true);
 
@@ -319,8 +319,8 @@ ${mermaidScript}
     panel: vscode.WebviewPanel,
     document: vscode.TextDocument
   ): Promise<void> {
-    const { html, toc, hasMermaid, wordCount } = await renderMarkdown(document.getText());
     const cfg = this.config.get();
+    const { html, toc, hasMermaid, wordCount } = await renderMarkdown(document.getText(), cfg.frontMatter);
     panel.webview.postMessage({
       type: 'update', html, toc, hasMermaid, wordCount, config: cfg,
       fileName: path.basename(document.fileName),

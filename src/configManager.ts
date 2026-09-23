@@ -2,9 +2,11 @@ import * as vscode from 'vscode';
 
 const THEMES = ['auto', 'light', 'dark', 'sepia'] as const;
 const WIDTHS  = ['narrow', 'medium', 'wide', 'wider', 'ultra', 'full'] as const;
+const FRONT_MATTER_MODES = ['card', 'hide', 'raw'] as const;
 
 export type Theme = typeof THEMES[number];
 export type ReadingWidth = typeof WIDTHS[number];
+export type FrontMatterMode = typeof FRONT_MATTER_MODES[number];
 
 export interface ReaderConfig {
   theme: Theme;
@@ -19,6 +21,7 @@ export interface ReaderConfig {
   openBeside: boolean;
   showReadingTime: boolean;
   readingSpeed: number;
+  frontMatter: FrontMatterMode;
 }
 
 /**
@@ -47,6 +50,7 @@ const DEFAULTS: ReaderConfig = {
   openBeside: true,
   showReadingTime: true,
   readingSpeed: 230,
+  frontMatter: 'card',
 };
 
 export class ConfigManager {

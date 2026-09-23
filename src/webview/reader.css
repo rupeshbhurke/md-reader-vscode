@@ -508,6 +508,90 @@ pre.mermaid[data-processed] {
   margin: 2.5em 0;
 }
 
+/* ── Front matter card ────────────────────────────────────────────────────── */
+/* mdReader.frontMatter: 'card' (default) — see markdownRenderer.ts renderFrontMatterCard() */
+.front-matter-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  margin: 0 0 2em;
+  padding: 1.1em 1.3em;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-alt);
+  font-family: var(--font-ui);
+  font-size: 0.9em;
+}
+.fm-row {
+  display: flex;
+  gap: 0.8em;
+  align-items: baseline;
+}
+.fm-key {
+  flex-shrink: 0;
+  min-width: 5em;
+  font-weight: 600;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-subtle);
+}
+.fm-value {
+  color: var(--text);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+.fm-tag {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.1em 0.7em;
+  font-size: 0.85em;
+}
+
+/* ── Footnotes (marked-footnote) ──────────────────────────────────────────── */
+#reader-content .footnotes {
+  margin-top: 3em;
+  padding-top: 1.5em;
+  border-top: 1px solid var(--border);
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+#reader-content .footnotes ol {
+  padding-left: 1.4em;
+}
+#reader-content .footnotes li {
+  margin: 0.5em 0;
+}
+#reader-content .footnotes li p {
+  display: inline;
+  margin: 0;
+}
+#reader-content [data-footnote-backref] {
+  text-decoration: none;
+  margin-left: 0.3em;
+  color: var(--accent);
+}
+#reader-content sup [data-footnote-ref] {
+  text-decoration: none;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 0 0.1em;
+}
+/* screen-reader-only "Footnotes" heading — keep it out of the visual layout */
+#reader-content .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ── TOC Floating Overlay ──────────────────────────────────────────────────── */
 #toc-overlay {
   position: fixed;

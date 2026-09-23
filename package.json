@@ -256,6 +256,21 @@
           "type": "string",
           "default": "",
           "description": "Absolute path to a CSS file loaded after the reader's own stylesheet, for personal style overrides. Leave empty to disable. Takes effect the next time a reader panel is opened."
+        },
+        "mdReader.frontMatter": {
+          "type": "string",
+          "default": "card",
+          "enum": [
+            "card",
+            "hide",
+            "raw"
+          ],
+          "enumDescriptions": [
+            "Show a metadata card (title, author, date, tags, ...) above the content",
+            "Strip the front matter block silently",
+            "Show the front matter as an ordinary (syntax-highlighted) code block instead of interpreting it"
+          ],
+          "description": "How to handle a leading --- YAML front matter block."
         }
       }
     }
@@ -283,6 +298,7 @@
     "highlight.js": "^11.9.0",
     "katex": "^0.18.7",
     "marked": "^11.1.0",
+    "marked-footnote": "^1.4.0",
     "mermaid": "^11.17.2"
   }
 }
