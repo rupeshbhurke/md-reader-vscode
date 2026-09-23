@@ -317,6 +317,40 @@ export class PanelManager {
   </aside>
   <div id="settings-backdrop"></div>
 
+  <!-- Find in document -->
+  <div id="find-bar" role="search" aria-label="Find in document">
+    <input type="text" id="find-input" placeholder="Find in document…" autocomplete="off" spellcheck="false" />
+    <span id="find-count">0/0</span>
+    <button id="find-prev" aria-label="Previous match" title="Previous match (Shift+Enter)">˄</button>
+    <button id="find-next" aria-label="Next match" title="Next match (Enter)">˅</button>
+    <button id="find-case" aria-label="Match case" title="Match case">Aa</button>
+    <button id="find-close" aria-label="Close find" title="Close (Esc)">✕</button>
+  </div>
+
+  <!-- Keyboard shortcuts help -->
+  <div id="shortcuts-overlay" role="dialog" aria-label="Keyboard shortcuts">
+    <div class="shortcuts-header">
+      <h2>Keyboard Shortcuts</h2>
+      <button id="shortcuts-close" aria-label="Close shortcuts help">✕</button>
+    </div>
+    <div class="shortcuts-content">
+      <dl>
+        <dt><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>F</kbd></dt><dd>Find in document</dd>
+        <dt><kbd>Enter</kbd> / <kbd>Shift</kbd>+<kbd>Enter</kbd></dt><dd>Next / previous match</dd>
+        <dt><kbd>j</kbd> / <kbd>k</kbd></dt><dd>Scroll down / up</dd>
+        <dt><kbd>Space</kbd> / <kbd>Shift</kbd>+<kbd>Space</kbd></dt><dd>Page down / up</dd>
+        <dt><kbd>g</kbd> / <kbd>G</kbd></dt><dd>Top / bottom of document</dd>
+        <dt><kbd>n</kbd> / <kbd>p</kbd></dt><dd>Next / previous heading</dd>
+        <dt><kbd>t</kbd></dt><dd>Toggle table of contents</dd>
+        <dt><kbd>s</kbd></dt><dd>Toggle settings</dd>
+        <dt><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>+</kbd>/<kbd>-</kbd>/<kbd>0</kbd></dt><dd>Font size + / − / reset</dd>
+        <dt><kbd>Esc</kbd></dt><dd>Close whichever panel is open</dd>
+        <dt><kbd>?</kbd></dt><dd>Toggle this help</dd>
+      </dl>
+    </div>
+  </div>
+  <div id="shortcuts-backdrop"></div>
+
   <!-- Reading progress bar -->
   <div id="progress-bar"></div>
 
