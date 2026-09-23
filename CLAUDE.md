@@ -30,7 +30,7 @@ No lint script configured.
 
 Flow: `extension.ts` registers commands/events → delegates to `PanelManager` → webview panel runs `src/webview/reader.js` + `reader.css`, communicating with the extension host via `postMessage`.
 
-- **`src/extension.ts`** — activation entry point. Registers all `mdReader.*` commands, wires `onDidSaveTextDocument` (auto-refresh), `onDidChangeConfiguration` (live config broadcast), and `onDidCloseTextDocument` (dispose panel when source file closes).
+- **`src/extension.ts`** — activation entry point. Registers all `mdReader.*` commands, wires auto-refresh (`onDidSaveTextDocument` for in-editor saves, plus `onDidChangeTextDocument` filtered to `!document.isDirty` for external changes — see the comment above that listener; the second is required or a background/external save never refreshes the panel), `onDidChangeConfiguration` (live config broadcast), and `onDidCloseTextDocument` (dispose panel when source file closes).
 - **`src/panelManager.ts`** — owns all webview panels, keyed by document URI string in a `Map`. Key responsibilities:
   - `open()` creates a `WebviewPanel`, builds its HTML shell (`buildShell`, inlined string containing the settings drawer/TOC overlay/find bar/shortcuts-help overlay/progress bar markup), sends initial rendered content, and wires the panel's `onDidReceiveMessage` handler (`scroll` messages for editor↔reader sync, `updateSetting` messages that mutate config via `ConfigManager`, gated by `SETTABLE_KEYS`).
   - Two-way scroll sync: reader→editor via `syncEditorScroll` (with a per-URI `ignoreEditorScrollUntil` debounce map to prevent echo loops), editor→reader via `setupScrollSync` listening to `onDidChangeTextEditorVisibleRanges`.
