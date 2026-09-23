@@ -17,6 +17,8 @@ export interface ReaderConfig {
   scrollSync: boolean;
   blueLightFilter: number;
   openBeside: boolean;
+  showReadingTime: boolean;
+  readingSpeed: number;
 }
 
 /**
@@ -43,6 +45,8 @@ const DEFAULTS: ReaderConfig = {
   scrollSync: false,
   blueLightFilter: 0,
   openBeside: true,
+  showReadingTime: true,
+  readingSpeed: 230,
 };
 
 export class ConfigManager {

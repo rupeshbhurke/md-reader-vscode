@@ -166,6 +166,30 @@ body {
   border-radius: 0 2px 2px 0;
 }
 
+/* ── Reading time / word count ────────────────────────────────────────────── */
+#reading-meta {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 400;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--toc-shadow);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.75em;
+  padding: 5px 10px;
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity var(--transition), transform var(--transition);
+}
+#reading-meta.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ── Blue Light Filter (Eye Care) ──────────────────────────────────────────── */
 body.blue-light-filter::after {
   content: "";
@@ -1079,7 +1103,7 @@ body.lightbox-open #image-lightbox {
    webview — see reader.js) as well as an ordinary Ctrl+P / browser print. */
 @media print {
   /* Reading-mode chrome has no place on a printed page */
-  #progress-bar, #toc-overlay, #toc-backdrop,
+  #progress-bar, #reading-meta, #toc-overlay, #toc-backdrop,
   #settings-drawer, #settings-backdrop,
   #find-bar, #shortcuts-overlay, #shortcuts-backdrop,
   #image-lightbox,

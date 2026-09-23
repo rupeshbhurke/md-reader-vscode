@@ -41,16 +41,37 @@ export class PanelManager {
         ? vscode.ViewColumn.Beside
         : vscode.ViewColumn.Active;
 
+    // Custom CSS is a per-panel-creation concern, not a live setting: it
+    // needs its directory in localResourceRoots (fixed at panel creation —
+    // VS Code has no API to change it afterwards) and a <link> baked into
+    // buildShell's one-time HTML. A change to mdReader.customCssPath only
+    // takes effect on the next panel open, which the setting's description
+    // says explicitly.
+    const customCssPath = cfg.get<string>('customCssPath', '').trim();
+    let customCssUri: vscode.Uri | undefined;
+    if (customCssPath) {
+      if (fs.existsSync(customCssPath)) {
+        customCssUri = vscode.Uri.file(customCssPath);
+      } else {
+        vscode.window.showWarningMessage(`MD Reader: customCssPath not found: ${customCssPath}`);
+      }
+    }
+
+    const localResourceRoots = [
+      vscode.Uri.file(path.join(this.context.extensionPath, 'src', 'webview')),
+      vscode.Uri.file(path.dirname(document.fileName)),
+    ];
+    if (customCssUri) {
+      localResourceRoots.push(vscode.Uri.file(path.dirname(customCssPath)));
+    }
+
     const panel = vscode.window.createWebviewPanel(
       'mdReaderPanel',
       `📖 ${path.basename(document.fileName)}`,
       column,
       {
         enableScripts: true,
-        localResourceRoots: [
-          vscode.Uri.file(path.join(this.context.extensionPath, 'src', 'webview')),
-          vscode.Uri.file(path.dirname(document.fileName)),
-        ],
+        localResourceRoots,
         retainContextWhenHidden: true,
       }
     );
@@ -59,7 +80,7 @@ export class PanelManager {
     this.activeUri = key;
 
     // Set initial HTML shell
-    panel.webview.html = this.buildShell(panel.webview);
+    panel.webview.html = this.buildShell(panel.webview, customCssUri);
 
     // Send rendered content
     await this.sendUpdate(panel, document);
@@ -298,10 +319,10 @@ ${mermaidScript}
     panel: vscode.WebviewPanel,
     document: vscode.TextDocument
   ): Promise<void> {
-    const { html, toc, hasMermaid } = await renderMarkdown(document.getText());
+    const { html, toc, hasMermaid, wordCount } = await renderMarkdown(document.getText());
     const cfg = this.config.get();
     panel.webview.postMessage({
-      type: 'update', html, toc, hasMermaid, config: cfg,
+      type: 'update', html, toc, hasMermaid, wordCount, config: cfg,
       fileName: path.basename(document.fileName),
     });
   }
@@ -377,7 +398,7 @@ ${mermaidScript}
     await vscode.commands.executeCommand('vscode.open', uri);
   }
 
-  private buildShell(webview: vscode.Webview): string {
+  private buildShell(webview: vscode.Webview, customCssUri?: vscode.Uri): string {
     const webviewDir = path.join(this.context.extensionPath, 'src', 'webview');
     const vendorDir = path.join(webviewDir, 'vendor');
     const cssUri = webview.asWebviewUri(
@@ -394,6 +415,12 @@ ${mermaidScript}
     );
     const nonce = getNonce();
 
+    // Loaded last, after reader.css/katex.css, so a user override wins the
+    // normal CSS cascade without needing !important.
+    const customCssLink = customCssUri
+      ? `\n  <link rel="stylesheet" href="${webview.asWebviewUri(customCssUri)}" />`
+      : '';
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -406,7 +433,7 @@ ${mermaidScript}
              img-src ${webview.cspSource} https: data:;
              font-src ${webview.cspSource} https:;" />
   <link rel="stylesheet" href="${cssUri}" />
-  <link rel="stylesheet" href="${katexCssUri}" />
+  <link rel="stylesheet" href="${katexCssUri}" />${customCssLink}
   <title>MD Reader</title>
   <script nonce="${nonce}">
     // mermaid.min.js is loaded lazily (see reader.js) only when a document
@@ -550,6 +577,9 @@ ${mermaidScript}
 
   <!-- Reading progress bar -->
   <div id="progress-bar"></div>
+
+  <!-- Reading time / word count -->
+  <div id="reading-meta"></div>
 
   <!-- TOC floating overlay -->
   <nav id="toc-overlay" aria-label="Table of Contents">
