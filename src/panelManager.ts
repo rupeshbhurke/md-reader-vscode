@@ -137,6 +137,104 @@ export class PanelManager {
   }
 
   /**
+   * Export the active panel's document as a standalone .html file: the
+   * rendered content plus reader.css and KaTeX's CSS inlined, so it opens
+   * correctly in a plain browser with no dependency on the extension.
+   *
+   * Local images are base64-inlined by default (mdReader.export.embedImages)
+   * so the file is self-contained; remote (http/https) images are always
+   * left as links. Mermaid diagrams, if present, reference mermaid.js from
+   * a CDN rather than inlining the ~3.5MB vendored bundle — the exported
+   * file needs network access to render them, which is called out in the
+   * confirmation message.
+   */
+  async exportActiveAsHtml(): Promise<void> {
+    if (!this.activeUri) { return; }
+    const document = vscode.workspace.textDocuments.find(
+      d => d.uri.toString() === this.activeUri
+    );
+    if (!document) { return; }
+
+    const { html, hasMermaid } = await renderMarkdown(document.getText());
+    const cfg = this.config.get();
+    const embedImages = vscode.workspace.getConfiguration('mdReader')
+      .get<boolean>('export.embedImages', true);
+
+    const content = embedImages
+      ? this.inlineLocalImages(html, path.dirname(document.fileName))
+      : html;
+
+    const readerCssPath = path.join(this.context.extensionPath, 'src', 'webview', 'reader.css');
+    const katexCssPath = path.join(this.context.extensionPath, 'src', 'webview', 'vendor', 'katex', 'katex.min.css');
+
+    let readerCss = '';
+    let katexCss = '';
+    try { readerCss = fs.readFileSync(readerCssPath, 'utf8'); } catch { /* ship without reader styling rather than fail the export */ }
+    try { katexCss = fs.readFileSync(katexCssPath, 'utf8'); } catch { /* math still renders, just unstyled */ }
+
+    // KaTeX's CSS references its font files via relative url(fonts/...),
+    // which won't resolve next to a single standalone exported file — math
+    // still renders as valid HTML, just without KaTeX's custom glyphs.
+    const mermaidScript = hasMermaid
+      ? `<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: ${JSON.stringify(cfg.theme === 'dark' ? 'dark' : 'default')} });</script>`
+      : '';
+
+    const standalone = `<!DOCTYPE html>
+<html lang="en" data-theme="${cfg.theme}">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(path.basename(document.fileName))}</title>
+<style>${readerCss}</style>
+<style>${katexCss}</style>
+</head>
+<body>
+<main id="reader-main"><article id="reader-content">${content}</article></main>
+${mermaidScript}
+</body>
+</html>`;
+
+    const defaultUri = vscode.Uri.file(
+      document.fileName.replace(/\.(md|markdown)$/i, '') + '.html'
+    );
+    const saveUri = await vscode.window.showSaveDialog({
+      defaultUri,
+      filters: { 'HTML': ['html'] },
+    });
+    if (!saveUri) { return; }
+
+    await vscode.workspace.fs.writeFile(saveUri, Buffer.from(standalone, 'utf8'));
+    vscode.window.showInformationMessage(
+      `MD Reader: exported to ${path.basename(saveUri.fsPath)}` +
+      (hasMermaid ? ' (diagrams need an internet connection to render — loaded from a CDN)' : '')
+    );
+  }
+
+  /** Base64-inline every local (non-http(s), non-data:) <img src="..."> so the exported file is self-contained. Unreadable/unrecognized images are left as-authored rather than failing the whole export. */
+  private inlineLocalImages(html: string, baseDir: string): string {
+    const MIME: Record<string, string> = {
+      '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif', '.svg': 'image/svg+xml', '.webp': 'image/webp',
+      '.bmp': 'image/bmp', '.avif': 'image/avif',
+    };
+
+    return html.replace(/(<img[^>]*\ssrc=")([^"]+)(")/g, (full, pre, src, post) => {
+      if (/^(https?:|data:)/i.test(src)) { return full; }
+
+      try {
+        const filePath = path.resolve(baseDir, decodeURIComponent(src));
+        const mime = MIME[path.extname(filePath).toLowerCase()];
+        if (!mime) { return full; }
+
+        const data = fs.readFileSync(filePath).toString('base64');
+        return `${pre}data:${mime};base64,${data}${post}`;
+      } catch {
+        return full;
+      }
+    });
+  }
+
+  /**
    * Register the editor → reader scroll listener.
    * Call once from extension.ts after creating PanelManager.
    */
@@ -486,4 +584,12 @@ function getNonce(): string {
     text += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return text;
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }

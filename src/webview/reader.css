@@ -1073,3 +1073,41 @@ body.lightbox-open #image-lightbox {
   #find-bar { left: 16px; right: 16px; }
   #find-input { width: auto; flex: 1; }
 }
+
+/* ── Print ─────────────────────────────────────────────────────────────────── */
+/* Triggered by window.print() (mdReader.exportPdf posts {type:'print'} to the
+   webview — see reader.js) as well as an ordinary Ctrl+P / browser print. */
+@media print {
+  /* Reading-mode chrome has no place on a printed page */
+  #progress-bar, #toc-overlay, #toc-backdrop,
+  #settings-drawer, #settings-backdrop,
+  #find-bar, #shortcuts-overlay, #shortcuts-backdrop,
+  #image-lightbox,
+  .copy-btn, .heading-anchor {
+    display: none !important;
+  }
+
+  /* Always print light, regardless of the active reading theme */
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  #reader-content a { color: #000 !important; }
+
+  #reader-main {
+    padding: 0;
+    min-height: 0;
+  }
+  #reader-content {
+    max-width: 100%;
+  }
+
+  /* Don't split these across a page break where avoidable */
+  .code-block, .md-figure, .table-wrap, pre.mermaid, .katex-display {
+    break-inside: avoid;
+  }
+
+  /* overflow-x: auto clips content on paper — let it wrap/expand instead */
+  .table-wrap { overflow-x: visible; }
+  .code-block pre, pre.mermaid { white-space: pre-wrap; overflow-x: visible; }
+}

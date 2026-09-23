@@ -71,6 +71,16 @@
         "title": "Find in MD Reader",
         "icon": "$(search)",
         "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.exportPdf",
+        "title": "Export as PDF...",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.exportHtml",
+        "title": "Export as HTML...",
+        "category": "MD Reader"
       }
     ],
     "keybindings": [
@@ -224,6 +234,11 @@
           "type": "boolean",
           "default": true,
           "description": "Open the reader beside the editor (split view). Set to false to open in a new full-width column."
+        },
+        "mdReader.export.embedImages": {
+          "type": "boolean",
+          "default": true,
+          "description": "When exporting as HTML, embed local images as base64 data URIs so the exported file is self-contained. Remote (http/https) images are always left as links."
         }
       }
     }

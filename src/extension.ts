@@ -40,6 +40,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.commands.registerCommand('mdReader.find', () => {
       panelManager.postToActive({ type: 'find' });
+    }),
+
+    vscode.commands.registerCommand('mdReader.exportPdf', () => {
+      panelManager.postToActive({ type: 'print' });
+    }),
+
+    vscode.commands.registerCommand('mdReader.exportHtml', () => {
+      panelManager.exportActiveAsHtml();
     })
   );
 

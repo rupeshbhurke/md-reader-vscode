@@ -102,6 +102,16 @@
       case 'find':
         openFindBar();
         break;
+      case 'print':
+        // Triggered by the mdReader.exportPdf command. Any open overlay
+        // would otherwise show up on the printed page/PDF too.
+        closeFindBar();
+        closeShortcutsHelp();
+        closeLightbox();
+        document.body.classList.remove('settings-open');
+        if (tocOpen) { closeTOC(); }
+        window.print();
+        break;
       case 'scrollTo':
         // Extension host is driving the scroll — suppress echo-back
         isReceivingScroll = true;
