@@ -36,6 +36,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.commands.registerCommand('mdReader.toggleSettings', () => {
       panelManager.toggleSettings();
+    }),
+
+    vscode.commands.registerCommand('mdReader.find', () => {
+      panelManager.postToActive({ type: 'find' });
     })
   );
 

@@ -65,19 +65,38 @@
         "title": "Refresh All Reader Panels",
         "icon": "$(sync)",
         "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.find",
+        "title": "Find in MD Reader",
+        "icon": "$(search)",
+        "category": "MD Reader"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "mdReader.find",
+        "key": "ctrl+f",
+        "mac": "cmd+f",
+        "when": "activeWebviewPanelId == 'mdReaderPanel'"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "mdReader.toggleTOC",
+          "command": "mdReader.find",
           "when": "activeWebviewPanelId == 'mdReaderPanel'",
           "group": "navigation@1"
         },
         {
-          "command": "mdReader.toggleSettings",
+          "command": "mdReader.toggleTOC",
           "when": "activeWebviewPanelId == 'mdReaderPanel'",
           "group": "navigation@2"
+        },
+        {
+          "command": "mdReader.toggleSettings",
+          "when": "activeWebviewPanelId == 'mdReaderPanel'",
+          "group": "navigation@3"
         },
         {
           "command": "mdReader.refresh",
