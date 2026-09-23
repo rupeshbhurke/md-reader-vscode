@@ -4,13 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repo layout
 
-Three separate apps, each with own `package.json`, share the same rendering approach (marked + highlight.js) but no shared code:
+Two separate apps, each with own `package.json`, share the same rendering approach (marked + highlight.js) but no shared code:
 
 - **Root** (`src/`) — the VS Code extension (`md-reader`), the primary project.
-- `android-app/` — Capacitor + Vite + TypeScript port for Android.
 - `windows-app/` — Electron + Vite port for Windows desktop.
 
-Work in root `src/` unless task explicitly targets android-app or windows-app.
+Work in root `src/` unless task explicitly targets windows-app.
 
 ## Commands (VS Code extension, root)
 
@@ -23,9 +22,8 @@ Work in root `src/` unless task explicitly targets android-app or windows-app.
 
 No lint script configured.
 
-### android-app / windows-app
+### windows-app
 
-- `cd android-app && npm run dev` / `npm run build` (tsc + vite build); `npx cap sync` / `npx cap open android` for native step.
 - `cd windows-app && npm run dev` / `npm run build` (tsc + vite build + electron-builder → nsis installer).
 
 ## Architecture (VS Code extension)

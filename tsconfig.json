@@ -12,5 +12,5 @@
     "resolveJsonModule": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", ".vscode-test", "android-app", "windows-app"]
+  "exclude": ["node_modules", ".vscode-test", "windows-app"]
 }
