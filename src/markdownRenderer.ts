@@ -10,6 +10,8 @@ export interface RenderedDocument {
   toc: TocEntry[];
   /** True if the document contains at least one ```mermaid fenced block — tells the webview whether it needs to lazy-load mermaid.min.js. */
   hasMermaid: boolean;
+  /** Word count of the readable text — code blocks, inline code, image/link syntax, and math are excluded (see countWords()). Reading time is derived from this in reader.js using the configurable mdReader.readingSpeed. */
+  wordCount: number;
 }
 
 export interface TocEntry {
@@ -40,7 +42,28 @@ export async function renderMarkdown(markdown: string): Promise<RenderedDocument
 
   const html = await marked.parse(markdown);
 
-  return { html, toc: currentToc, hasMermaid: sawMermaid };
+  return { html, toc: currentToc, hasMermaid: sawMermaid, wordCount: countWords(markdown) };
+}
+
+/**
+ * Word count of the readable text, over the raw markdown source rather than
+ * the rendered HTML — cheaper (no DOM/regex-strip pass over generated
+ * markup, including KaTeX's fairly verbose output) and avoids counting
+ * words inside a code block's syntax-highlighting spans twice.
+ */
+function countWords(markdown: string): number {
+  const readable = markdown
+    .replace(/```[\s\S]*?```/g, ' ')          // fenced code blocks
+    .replace(/`[^`\n]*`/g, ' ')                // inline code
+    .replace(/\$\$[\s\S]*?\$\$/g, ' ')         // block math
+    .replace(/\$[^$\n]*\$/g, ' ')              // inline math
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')     // images (alt text isn't "read")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')   // links — keep the link text
+    .replace(/^-{3,}$/gm, ' ')                 // hr / front-matter fences
+    .replace(/[#>*_~`|]/g, ' ');                // remaining markdown punctuation
+
+  const words = readable.trim().split(/\s+/).filter(Boolean);
+  return words.length;
 }
 
 // ── Marked instance (configured once) ──────────────────────────────────────────

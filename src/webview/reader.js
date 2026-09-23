@@ -37,10 +37,13 @@
   const lightboxImg    = document.getElementById('lightbox-img');
   const lightboxClose  = document.getElementById('lightbox-close');
 
+  const readingMeta = document.getElementById('reading-meta');
+
   // ── State ───────────────────────────────────────────────────────────────────
   let tocOpen = false;
   let currentConfig = {};
   let currentFileName = '';
+  let currentWordCount = 0;
   let headingElements = [];
 
   // ── Scroll sync state ────────────────────────────────────────────────────────
@@ -85,13 +88,16 @@
       case 'update':
         currentConfig = msg.config || {};
         currentFileName = msg.fileName || '';
+        currentWordCount = msg.wordCount || 0;
         applyConfig(currentConfig);
         renderContent(msg.html, msg.toc);
+        updateReadingMeta();
         if (msg.hasMermaid) { renderMermaidDiagrams(); }
         break;
       case 'config':
         currentConfig = msg.config || {};
         applyConfig(currentConfig);
+        updateReadingMeta();
         break;
       case 'toggleTOC':
         toggleTOC();
@@ -709,6 +715,21 @@
     const docHeight = (readerMain.scrollHeight || document.body.scrollHeight) - (readerMain.clientHeight || window.innerHeight);
     const pct = docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) : 0;
     progressBar.style.width = pct + '%';
+  }
+
+  // ── Reading time / word count ───────────────────────────────────────────────
+  function updateReadingMeta() {
+    if (!readingMeta) { return; }
+
+    if (!currentConfig.showReadingTime || !currentWordCount) {
+      readingMeta.classList.remove('visible');
+      return;
+    }
+
+    const wpm = currentConfig.readingSpeed || 230;
+    const minutes = Math.max(1, Math.round(currentWordCount / wpm));
+    readingMeta.textContent = `${minutes} min read · ${currentWordCount.toLocaleString()} words`;
+    readingMeta.classList.add('visible');
   }
 
   function highlightActiveTOCEntry() {

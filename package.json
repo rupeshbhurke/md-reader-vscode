@@ -239,6 +239,23 @@
           "type": "boolean",
           "default": true,
           "description": "When exporting as HTML, embed local images as base64 data URIs so the exported file is self-contained. Remote (http/https) images are always left as links."
+        },
+        "mdReader.showReadingTime": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show an estimated reading time and word count in the corner of the reader panel."
+        },
+        "mdReader.readingSpeed": {
+          "type": "number",
+          "default": 230,
+          "minimum": 50,
+          "maximum": 1000,
+          "description": "Words per minute used to estimate reading time."
+        },
+        "mdReader.customCssPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to a CSS file loaded after the reader's own stylesheet, for personal style overrides. Leave empty to disable. Takes effect the next time a reader panel is opened."
         }
       }
     }
