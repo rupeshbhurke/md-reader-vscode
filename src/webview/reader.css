@@ -613,8 +613,8 @@ pre.mermaid[data-processed] {
   right: -350px;
   width: 320px;
   height: 100vh;
-  background-color: var(--panel-bg);
-  border-left: 1px solid var(--border-color);
+  background-color: var(--surface);
+  border-left: 1px solid var(--border);
   box-shadow: -4px 0 24px rgba(0,0,0,0.1);
   z-index: 10000;
   transition: right 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -628,7 +628,7 @@ body.settings-open #settings-drawer {
 
 .settings-header {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -638,13 +638,13 @@ body.settings-open #settings-drawer {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--heading-color);
+  color: var(--text);
 }
 
 #settings-close {
   background: transparent;
   border: none;
-  color: var(--text-color);
+  color: var(--text);
   font-size: 1.2rem;
   cursor: pointer;
   padding: 4px;
@@ -652,7 +652,7 @@ body.settings-open #settings-drawer {
 }
 
 #settings-close:hover {
-  color: var(--heading-color);
+  color: var(--text);
 }
 
 .settings-content {
@@ -669,7 +669,7 @@ body.settings-open #settings-drawer {
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-color);
+  color: var(--text);
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -685,30 +685,30 @@ body.settings-open #settings-drawer {
 .setting-label-row label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-color);
+  color: var(--text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .setting-label-row span {
   font-size: 0.85rem;
-  color: var(--text-color);
+  color: var(--text);
   font-family: monospace;
 }
 
 .setting-group select {
   width: 100%;
   padding: 8px;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
+  background-color: var(--bg-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.95rem;
   outline: none;
 }
 
 .setting-group select:focus {
-  border-color: var(--link-color);
+  border-color: var(--accent);
 }
 
 /* Custom Range Sliders */
@@ -723,7 +723,7 @@ input[type=range]::-webkit-slider-thumb {
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  background: var(--link-color);
+  background: var(--accent);
   cursor: pointer;
   margin-top: -6px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -733,7 +733,7 @@ input[type=range]::-webkit-slider-runnable-track {
   width: 100%;
   height: 4px;
   cursor: pointer;
-  background: var(--border-color);
+  background: var(--border);
   border-radius: 2px;
 }
 
@@ -772,7 +772,7 @@ input[type=range]:focus {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--border-color);
+  background-color: var(--border);
   transition: .2s;
 }
 
@@ -788,7 +788,7 @@ input[type=range]:focus {
 }
 
 input:checked + .slider {
-  background-color: var(--link-color);
+  background-color: var(--accent);
 }
 
 input:checked + .slider:before {
