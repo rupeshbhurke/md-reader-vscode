@@ -36,6 +36,7 @@ export async function renderMarkdown(markdown: string): Promise<RenderedDocument
   currentToc = [];
   slugger.reset();
   sawMermaid = false;
+  taskIndex = 0;
 
   const html = await marked.parse(markdown);
 
@@ -46,6 +47,8 @@ export async function renderMarkdown(markdown: string): Promise<RenderedDocument
 
 let currentToc: TocEntry[] = [];
 let sawMermaid = false;
+/** Sequential index of each task-list checkbox in document order — panelManager.toggleTask() uses this to find the matching `- [ ]` line. */
+let taskIndex = 0;
 const slugger = new GithubSlugger();
 
 const marked = new Marked({
@@ -60,7 +63,8 @@ const marked = new Marked({
 function buildRenderer() {
   const renderer = new Renderer();
 
-  // Headings — GitHub-style unique anchor ids + TOC collection (levels 1-3)
+  // Headings — GitHub-style unique anchor ids + TOC collection (levels 1-3),
+  // plus a hover-revealed "copy link" button (levels 1-3 only, matching TOC).
   renderer.heading = (text: string, level: number, raw: string): string => {
     const cleaned = raw
       .toLowerCase()
@@ -72,7 +76,19 @@ function buildRenderer() {
       currentToc.push({ level, text: stripHtml(text), id });
     }
 
-    return `<h${level} id="${id}">${text}</h${level}>\n`;
+    const anchorBtn = level <= 3
+      ? ` <a class="heading-anchor" href="#${id}" data-copy-anchor="${id}" aria-label="Copy link to this heading" title="Copy link">#</a>`
+      : '';
+
+    return `<h${level} id="${id}">${text}${anchorBtn}</h${level}>\n`;
+  };
+
+  // Task-list checkboxes — clickable (not disabled) and tagged with a
+  // sequential document-order index so the webview can report back which
+  // one was toggled (see panelManager.ts toggleTask()).
+  renderer.checkbox = (checked: boolean): string => {
+    const index = taskIndex++;
+    return `<input type="checkbox" data-task-index="${index}"${checked ? ' checked=""' : ''}>`;
   };
 
   // Code blocks — syntax highlighting + copy button + language label

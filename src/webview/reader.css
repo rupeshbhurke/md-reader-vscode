@@ -228,6 +228,28 @@ body.blue-light-filter::after {
 #reader-content h2 > a,
 #reader-content h3 > a { text-decoration: none; color: inherit; }
 
+/* Hover-revealed "copy link" button, appended after each h1-h3's text */
+.heading-anchor {
+  display: inline-block;
+  margin-left: 0.4em;
+  font-size: 0.75em;
+  font-weight: 400;
+  color: var(--text-subtle) !important;
+  opacity: 0;
+  transition: opacity var(--transition);
+  vertical-align: middle;
+}
+h1:hover > .heading-anchor,
+h2:hover > .heading-anchor,
+h3:hover > .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+.heading-anchor.copied {
+  opacity: 1;
+  color: var(--accent) !important;
+}
+
 #reader-content p {
   margin: 1.1em 0;
 }
@@ -392,10 +414,13 @@ pre.mermaid[data-processed] {
 #reader-content li > ul,
 #reader-content li > ol { margin: 0.2em 0; }
 
-/* Task lists */
+/* Task lists — clickable (see reader.js toggleTask handling) */
 #reader-content input[type="checkbox"] {
   margin-right: 0.4em;
   accent-color: var(--accent);
+}
+#reader-content input[type="checkbox"][data-task-index] {
+  cursor: pointer;
 }
 
 /* ── Tables ────────────────────────────────────────────────────────────────── */
@@ -443,6 +468,7 @@ pre.mermaid[data-processed] {
   height: auto;
   border-radius: 8px;
   border: 1px solid var(--border);
+  cursor: zoom-in;
 }
 .md-figure figcaption {
   margin-top: 0.5em;
@@ -996,6 +1022,51 @@ body.shortcuts-open #shortcuts-overlay {
 body.shortcuts-open #shortcuts-backdrop {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* ── Image lightbox ───────────────────────────────────────────────────────── */
+#image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 10002;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.85);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+body.lightbox-open #image-lightbox {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#lightbox-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 6px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.5);
+  transition: transform 0.15s ease;
+  cursor: zoom-out;
+}
+
+#lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+#lightbox-close:hover {
+  background: rgba(255,255,255,0.2);
 }
 
 @media (max-width: 640px) {
