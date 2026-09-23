@@ -80,6 +80,10 @@ export class PanelManager {
         if ((SETTABLE_KEYS as readonly string[]).includes(msg.key)) {
           await this.config.set(msg.key as keyof ReaderConfig, msg.value);
         }
+      } else if (msg.type === 'toggleTask') {
+        await this.toggleTask(document, msg.index, msg.checked);
+      } else if (msg.type === 'openLink') {
+        await this.openLink(document, msg.href);
       }
     });
 
@@ -198,7 +202,81 @@ export class PanelManager {
   ): Promise<void> {
     const { html, toc, hasMermaid } = await renderMarkdown(document.getText());
     const cfg = this.config.get();
-    panel.webview.postMessage({ type: 'update', html, toc, hasMermaid, config: cfg });
+    panel.webview.postMessage({
+      type: 'update', html, toc, hasMermaid, config: cfg,
+      fileName: path.basename(document.fileName),
+    });
+  }
+
+  /**
+   * Toggle a task-list checkbox. `index` is its 0-based position in
+   * document order, matching the `data-task-index` markdownRenderer.ts
+   * stamps on each `<input type="checkbox">` — see renderer.checkbox there.
+   * Edits a single character in place (not a whole-document replace) so
+   * undo stays granular and concurrent edits elsewhere in the file are
+   * unaffected. This is an ordinary edit, not a forced save — it follows
+   * the user's normal save/autosave workflow like any other edit.
+   */
+  private async toggleTask(document: vscode.TextDocument, index: number, checked: boolean): Promise<void> {
+    const taskLineRe = /^(\s*[-*+]\s+\[)([ xX])\]/;
+    let seen = -1;
+
+    for (let line = 0; line < document.lineCount; line++) {
+      const match = taskLineRe.exec(document.lineAt(line).text);
+      if (!match) { continue; }
+      seen++;
+      if (seen !== index) { continue; }
+
+      const charStart = match[1].length;
+      const range = new vscode.Range(line, charStart, line, charStart + 1);
+      const edit = new vscode.WorkspaceEdit();
+      edit.replace(document.uri, range, checked ? 'x' : ' ');
+      await vscode.workspace.applyEdit(edit);
+      return;
+    }
+  }
+
+  /**
+   * Handle a click on a link inside the rendered content. `href` is
+   * whatever `<a>` attribute marked emitted, unresolved.
+   *   - An explicit URI scheme (http:, https:, mailto:, ...) opens externally.
+   *   - A relative path ending .md/.markdown opens in another reader panel,
+   *     resolved against the source document's own directory.
+   *   - Any other relative path is handed to VS Code's default opener.
+   * A bare `#fragment` link never reaches here — the webview scrolls to it
+   * locally (see reader.js) without a round trip to the extension host.
+   */
+  private async openLink(document: vscode.TextDocument, href: string): Promise<void> {
+    if (!href) { return; }
+
+    // Has an explicit URI scheme — but don't mistake a Windows drive-letter
+    // absolute path ("C:\..." / "C:/...") for one.
+    if (/^[a-z][a-z0-9+.-]*:/i.test(href) && !/^[a-z]:[\\/]/i.test(href)) {
+      try {
+        await vscode.env.openExternal(vscode.Uri.parse(href));
+      } catch {
+        vscode.window.showWarningMessage(`MD Reader: couldn't open link "${href}".`);
+      }
+      return;
+    }
+
+    const [pathPart] = href.split('#');
+    if (!pathPart) { return; }
+
+    const resolved = path.resolve(path.dirname(document.fileName), decodeURIComponent(pathPart));
+    const uri = vscode.Uri.file(resolved);
+
+    if (/\.(md|markdown)$/i.test(pathPart)) {
+      try {
+        const target = await vscode.workspace.openTextDocument(uri);
+        await this.open(target, false);
+      } catch {
+        vscode.window.showWarningMessage(`MD Reader: couldn't open "${pathPart}".`);
+      }
+      return;
+    }
+
+    await vscode.commands.executeCommand('vscode.open', uri);
   }
 
   private buildShell(webview: vscode.Webview): string {
@@ -365,6 +443,12 @@ export class PanelManager {
     </div>
   </div>
   <div id="shortcuts-backdrop"></div>
+
+  <!-- Image lightbox -->
+  <div id="image-lightbox" role="dialog" aria-label="Image preview">
+    <img id="lightbox-img" alt="" />
+    <button id="lightbox-close" aria-label="Close image preview">✕</button>
+  </div>
 
   <!-- Reading progress bar -->
   <div id="progress-bar"></div>

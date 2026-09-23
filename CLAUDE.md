@@ -48,5 +48,5 @@ Touches four places in lockstep: `package.json` (`contributes.configuration.prop
 
 ### Extension ↔ webview message protocol
 
-Extension → webview: `{type: 'update', html, toc, hasMermaid, config}`, `{type: 'config', config}` (live setting broadcast), `{type: 'scrollTo', percentage}`, `{type: 'toggleTOC'}`, `{type: 'toggleSettings'}`, `{type: 'find'}` (focuses/opens the find bar — triggered by the `mdReader.find` command, Ctrl/Cmd+F).
-Webview → extension: `{type: 'scroll', percentage}`, `{type: 'updateSetting', key, value}` (key must be in `SETTABLE_KEYS`).
+Extension → webview: `{type: 'update', html, toc, hasMermaid, fileName, config}`, `{type: 'config', config}` (live setting broadcast), `{type: 'scrollTo', percentage}`, `{type: 'toggleTOC'}`, `{type: 'toggleSettings'}`, `{type: 'find'}` (focuses/opens the find bar — triggered by the `mdReader.find` command, Ctrl/Cmd+F).
+Webview → extension: `{type: 'scroll', percentage}`, `{type: 'updateSetting', key, value}` (key must be in `SETTABLE_KEYS`), `{type: 'toggleTask', index, checked}` (a task-list checkbox click — `index` matches its `data-task-index`, see `panelManager.ts` `toggleTask()`), `{type: 'openLink', href}` (a content link click other than a bare `#fragment`, which the webview handles locally — see `panelManager.ts` `openLink()`).

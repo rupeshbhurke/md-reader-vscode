@@ -33,9 +33,14 @@
   const shortcutsOverlay  = document.getElementById('shortcuts-overlay');
   const shortcutsBackdrop = document.getElementById('shortcuts-backdrop');
 
+  const lightbox      = document.getElementById('image-lightbox');
+  const lightboxImg    = document.getElementById('lightbox-img');
+  const lightboxClose  = document.getElementById('lightbox-close');
+
   // ── State ───────────────────────────────────────────────────────────────────
   let tocOpen = false;
   let currentConfig = {};
+  let currentFileName = '';
   let headingElements = [];
 
   // ── Scroll sync state ────────────────────────────────────────────────────────
@@ -79,6 +84,7 @@
     switch (msg.type) {
       case 'update':
         currentConfig = msg.config || {};
+        currentFileName = msg.fileName || '';
         applyConfig(currentConfig);
         renderContent(msg.html, msg.toc);
         if (msg.hasMermaid) { renderMermaidDiagrams(); }
@@ -282,6 +288,15 @@
 
   // ── Render content ──────────────────────────────────────────────────────────
   function renderContent(html, toc) {
+    // Capture scroll position as a percentage before the DOM is replaced —
+    // innerHTML swaps reset scroll to 0, which would otherwise jerk the
+    // reader back to the top on every save/refresh-triggered re-render.
+    const prevRange = Math.max(1,
+      (readerMain.scrollHeight || document.body.scrollHeight) -
+      (readerMain.clientHeight || window.innerHeight)
+    );
+    const prevScrollPct = (readerMain.scrollTop || window.scrollY || 0) / prevRange;
+
     readerContent.classList.remove('loaded');
     readerContent.innerHTML = html;
 
@@ -299,6 +314,22 @@
     // Trigger fade-in
     requestAnimationFrame(() => {
       readerContent.classList.add('loaded');
+    });
+
+    // Restore scroll position (suppressing scroll-sync echo, same as an
+    // extension-driven 'scrollTo' — this isn't the reader panel scrolling
+    // in response to reading, so it shouldn't move the editor).
+    isReceivingScroll = true;
+    clearTimeout(receiveScrollTimer);
+    requestAnimationFrame(() => {
+      const newRange = Math.max(1,
+        (readerMain.scrollHeight || document.body.scrollHeight) -
+        (readerMain.clientHeight || window.innerHeight)
+      );
+      const targetTop = prevScrollPct * newRange;
+      readerMain.scrollTop = targetTop;
+      window.scrollTo(0, targetTop);
+      receiveScrollTimer = setTimeout(() => { isReceivingScroll = false; }, 150);
     });
 
     // Reset progress bar
@@ -379,6 +410,85 @@
       });
     });
   }
+
+  // ── Content interactions ────────────────────────────────────────────────────
+  // One delegated listener on the stable #reader-content container, so it
+  // keeps working across renderContent()'s innerHTML swaps without needing
+  // to be re-attached on every render (unlike attachCopyButtons, which binds
+  // to elements that get replaced).
+  readerContent.addEventListener('click', (e) => {
+    const anchorBtn = e.target.closest('.heading-anchor');
+    if (anchorBtn) {
+      e.preventDefault();
+      const id = anchorBtn.dataset.copyAnchor;
+      const link = currentFileName ? `${currentFileName}#${id}` : `#${id}`;
+      navigator.clipboard.writeText(link).then(() => {
+        anchorBtn.classList.add('copied');
+        setTimeout(() => anchorBtn.classList.remove('copied'), 1200);
+      });
+      return;
+    }
+
+    const taskCheckbox = e.target.closest('input[type="checkbox"][data-task-index]');
+    if (taskCheckbox) {
+      const index = parseInt(taskCheckbox.dataset.taskIndex, 10);
+      vscode.postMessage({ type: 'toggleTask', index, checked: taskCheckbox.checked });
+      return;
+    }
+
+    const img = e.target.closest('.md-figure img');
+    if (img) {
+      openLightbox(img.src, img.alt);
+      return;
+    }
+
+    const link = e.target.closest('a[href]');
+    if (!link) { return; }
+    const href = link.getAttribute('href');
+    if (!href) { return; }
+
+    if (href.startsWith('#')) {
+      // Same-document anchor — resolve locally, no round trip needed.
+      e.preventDefault();
+      const target = document.getElementById(href.slice(1));
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    // Everything else (external URL, relative file) — the extension host
+    // decides how to open it (openExternal / another reader panel /
+    // vscode.open). See panelManager.ts openLink().
+    e.preventDefault();
+    vscode.postMessage({ type: 'openLink', href });
+  });
+
+  // ── Image lightbox ───────────────────────────────────────────────────────────
+  let lightboxScale = 1;
+
+  function openLightbox(src, alt) {
+    if (!lightbox || !lightboxImg) { return; }
+    lightboxImg.src = src;
+    lightboxImg.alt = alt || '';
+    lightboxScale = 1;
+    lightboxImg.style.transform = 'scale(1)';
+    document.body.classList.add('lightbox-open');
+  }
+
+  function closeLightbox() {
+    if (!lightbox || !lightboxImg) { return; }
+    document.body.classList.remove('lightbox-open');
+    lightboxImg.removeAttribute('src');
+  }
+
+  lightboxClose?.addEventListener('click', closeLightbox);
+  lightbox?.addEventListener('click', (e) => {
+    if (e.target === lightbox) { closeLightbox(); }
+  });
+  lightbox?.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    lightboxScale = Math.min(4, Math.max(1, lightboxScale + (e.deltaY < 0 ? 0.2 : -0.2)));
+    lightboxImg.style.transform = `scale(${lightboxScale})`;
+  }, { passive: false });
 
   // ── TOC ─────────────────────────────────────────────────────────────────────
   function buildTOC(toc) {
@@ -656,6 +766,7 @@
   document.addEventListener('keydown', (e) => {
     // Escape closes whichever overlay is open, innermost first.
     if (e.key === 'Escape') {
+      if (document.body.classList.contains('lightbox-open')) { closeLightbox(); return; }
       if (document.body.classList.contains('find-open')) { closeFindBar(); return; }
       if (document.body.classList.contains('shortcuts-open')) { closeShortcutsHelp(); return; }
       if (document.body.classList.contains('settings-open')) { toggleSettings(); return; }
