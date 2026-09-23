@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { ConfigManager, Theme, ReadingWidth } from './configManager';
+import { ConfigManager, ReaderConfig, SETTABLE_KEYS } from './configManager';
 import { renderMarkdown } from './markdownRenderer';
 
 export class PanelManager {
@@ -72,10 +72,14 @@ export class PanelManager {
     });
 
     // Handle messages from webview
-    panel.webview.onDidReceiveMessage(msg => {
+    panel.webview.onDidReceiveMessage(async msg => {
       if (msg.type === 'scroll' && this.config.get().scrollSync) {
         // Reader scrolled → sync the editor
         this.syncEditorScroll(key, msg.percentage);
+      } else if (msg.type === 'updateSetting') {
+        if ((SETTABLE_KEYS as readonly string[]).includes(msg.key)) {
+          await this.config.set(msg.key as keyof ReaderConfig, msg.value);
+        }
       }
     });
 
@@ -124,44 +128,8 @@ export class PanelManager {
     }
   }
 
-  async cycleTheme(): Promise<void> {
-    const current = this.config.get().theme;
-    const next = this.config.nextTheme(current);
-    await this.config.setTheme(next);
-    vscode.window.setStatusBarMessage(`MD Reader: Theme → ${next}`, 2000);
-  }
-
-  async pickWidth(): Promise<void> {
-    const current = this.config.get().readingWidth;
-
-    const WIDTH_OPTIONS: vscode.QuickPickItem[] = [
-      { label: current === 'narrow' ? '• Narrow'  : 'Narrow',  description: '640px — focused reading' },
-      { label: current === 'medium' ? '• Medium'  : 'Medium',  description: '760px — balanced default' },
-      { label: current === 'wide'   ? '• Wide'    : 'Wide',    description: '960px — more content visible' },
-      { label: current === 'wider'  ? '• Wider'   : 'Wider',   description: '1100px — for large monitors' },
-      { label: current === 'ultra'  ? '• Ultra'   : 'Ultra',   description: '1400px — maximum fixed width' },
-      { label: current === 'full'   ? '• Full'    : 'Full',    description: '100% — full window width' },
-    ];
-
-    const picked = await vscode.window.showQuickPick(WIDTH_OPTIONS, {
-      title: 'MD Reader — Reading Width',
-      placeHolder: `Current: ${current} — select a width…`,
-      matchOnDescription: true,
-    });
-
-    if (picked) {
-      const key = picked.label.replace(/^• /, '').toLowerCase() as any;
-      await this.config.setWidth(key);
-      vscode.window.setStatusBarMessage(`MD Reader: Width → ${key}`, 2000);
-    }
-  }
-
-  async toggleScrollSync(): Promise<void> {
-    const current = this.config.get().scrollSync;
-    await this.config.setScrollSync(!current);
-    vscode.window.setStatusBarMessage(
-      `MD Reader: Scroll Sync ${!current ? 'ON' : 'OFF'}`, 2000
-    );
+  toggleSettings(): void {
+    this.postToActive({ type: 'toggleSettings' });
   }
 
   /**
@@ -190,71 +158,6 @@ export class PanelManager {
         panel.webview.postMessage({ type: 'scrollTo', percentage });
       })
     );
-  }
-
-  async pickFontFamily(): Promise<void> {
-    const current = this.config.get().fontFamily;
-
-    const FONT_FAMILIES: vscode.QuickPickItem[] = [
-      { label: '$(blank)', kind: vscode.QuickPickItemKind.Separator, description: 'Serif' },
-      { label: 'Georgia',                   description: "Georgia, 'Times New Roman', serif" },
-      { label: 'Palatino',                  description: "'Palatino Linotype', Palatino, serif" },
-      { label: 'Times New Roman',           description: "'Times New Roman', Times, serif" },
-      { label: 'Garamond',                  description: "Garamond, 'EB Garamond', serif" },
-      { label: 'Book Antiqua',              description: "'Book Antiqua', Palatino, serif" },
-      { label: '$(blank)', kind: vscode.QuickPickItemKind.Separator, description: 'Sans-Serif' },
-      { label: 'Segoe UI',                  description: "'Segoe UI', system-ui, sans-serif" },
-      { label: 'Inter',                     description: "'Inter', system-ui, sans-serif" },
-      { label: 'Arial',                     description: "Arial, Helvetica, sans-serif" },
-      { label: 'Verdana',                   description: "Verdana, Geneva, sans-serif" },
-      { label: 'Calibri',                   description: "Calibri, Candara, sans-serif" },
-      { label: '$(blank)', kind: vscode.QuickPickItemKind.Separator, description: 'Monospace' },
-      { label: 'JetBrains Mono',            description: "'JetBrains Mono', 'Fira Code', monospace" },
-      { label: 'Cascadia Code',             description: "'Cascadia Code', Consolas, monospace" },
-      { label: 'Courier New',               description: "'Courier New', Courier, monospace" },
-    ];
-
-    // Mark current selection
-    FONT_FAMILIES.forEach(item => {
-      if (item.description === current) {
-        item.label = '• ' + item.label;
-      }
-    });
-
-    const picked = await vscode.window.showQuickPick(FONT_FAMILIES, {
-      title: 'MD Reader — Font Family',
-      placeHolder: 'Select a reading font…',
-      matchOnDescription: true,
-    });
-
-    if (picked && picked.description && picked.kind !== vscode.QuickPickItemKind.Separator) {
-      await this.config.setFontFamily(picked.description);
-      vscode.window.setStatusBarMessage(`MD Reader: Font → ${picked.label.replace(/^• /, '')}`, 2000);
-    }
-  }
-
-  async pickFontSize(): Promise<void> {
-    const current = this.config.get().fontSize;
-
-    const SIZES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 24, 26, 28, 30, 32, 36, 40, 44, 48, 56, 64, 72];
-
-    const items: vscode.QuickPickItem[] = SIZES.map(size => ({
-      label: size === current ? `• ${size}px` : `${size}px`,
-      description: size === current ? 'current' : '',
-    }));
-
-    const picked = await vscode.window.showQuickPick(items, {
-      title: 'MD Reader — Font Size',
-      placeHolder: `Current: ${current}px — select a new size…`,
-    });
-
-    if (picked) {
-      const newSize = parseInt(picked.label.replace(/[^0-9]/g, ''), 10);
-      if (!isNaN(newSize)) {
-        await this.config.setFontSize(newSize);
-        vscode.window.setStatusBarMessage(`MD Reader: Font size → ${newSize}px`, 2000);
-      }
-    }
   }
 
   // ── Dispose ──────────────────────────────────────────────────────────────────
@@ -323,6 +226,97 @@ export class PanelManager {
   <title>MD Reader</title>
 </head>
 <body>
+  <!-- Settings Drawer -->
+  <aside id="settings-drawer" aria-label="Settings">
+    <div class="settings-header">
+      <h2>Reader Settings</h2>
+      <button id="settings-close" aria-label="Close Settings">✕</button>
+    </div>
+    <div class="settings-content">
+      
+      <div class="setting-group">
+        <label for="set-theme">Theme</label>
+        <select id="set-theme">
+          <option value="auto">Auto (Matches VS Code)</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="sepia">Sepia</option>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <label for="set-font">Font Family</label>
+        <select id="set-font">
+          <optgroup label="Serif">
+            <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+            <option value="'Palatino Linotype', Palatino, serif">Palatino</option>
+            <option value="'Times New Roman', Times, serif">Times New Roman</option>
+            <option value="Garamond, 'EB Garamond', serif">Garamond</option>
+            <option value="'Book Antiqua', Palatino, serif">Book Antiqua</option>
+          </optgroup>
+          <optgroup label="Sans-Serif">
+            <option value="'Segoe UI', system-ui, sans-serif">Segoe UI</option>
+            <option value="'Inter', system-ui, sans-serif">Inter</option>
+            <option value="Arial, Helvetica, sans-serif">Arial</option>
+            <option value="Verdana, Geneva, sans-serif">Verdana</option>
+            <option value="Calibri, Candara, sans-serif">Calibri</option>
+          </optgroup>
+          <optgroup label="Monospace">
+            <option value="'JetBrains Mono', 'Fira Code', monospace">JetBrains Mono</option>
+            <option value="'Cascadia Code', Consolas, monospace">Cascadia Code</option>
+            <option value="'Courier New', Courier, monospace">Courier New</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label-row">
+          <label for="set-size">Font Size</label>
+          <span id="val-size">17px</span>
+        </div>
+        <input type="range" id="set-size" min="10" max="72" step="1">
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label-row">
+          <label for="set-lineheight">Line Height</label>
+          <span id="val-lineheight">1.85</span>
+        </div>
+        <input type="range" id="set-lineheight" min="1.0" max="2.5" step="0.05">
+      </div>
+
+      <div class="setting-group">
+        <label for="set-width">Reading Width</label>
+        <select id="set-width">
+          <option value="narrow">Narrow (640px)</option>
+          <option value="medium">Medium (760px)</option>
+          <option value="wide">Wide (960px)</option>
+          <option value="wider">Wider (1100px)</option>
+          <option value="ultra">Ultra (1400px)</option>
+          <option value="full">Full Width (100%)</option>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label-row">
+          <label for="set-eyecare">Eye Care (Blue Light)</label>
+          <span id="val-eyecare">0%</span>
+        </div>
+        <input type="range" id="set-eyecare" min="0" max="100" step="1">
+      </div>
+
+      <div class="setting-group toggle-group">
+        <label for="set-scrollsync">Editor Scroll Sync</label>
+        <label class="switch">
+          <input type="checkbox" id="set-scrollsync">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+    </div>
+  </aside>
+  <div id="settings-backdrop"></div>
+
   <!-- Reading progress bar -->
   <div id="progress-bar"></div>
 

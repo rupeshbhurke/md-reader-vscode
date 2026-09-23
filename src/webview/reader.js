@@ -60,6 +60,9 @@
       case 'toggleTOC':
         toggleTOC();
         break;
+      case 'toggleSettings':
+        toggleSettings();
+        break;
       case 'scrollTo':
         // Extension host is driving the scroll — suppress echo-back
         isReceivingScroll = true;
@@ -112,7 +115,137 @@
       readerMain.style.paddingLeft  = widthKey === 'full' ? '16px' : '32px';
       readerMain.style.paddingRight = widthKey === 'full' ? '16px' : '32px';
     }
+
+    // Blue light filter (Eye Care)
+    if (typeof cfg.blueLightFilter === 'number' && cfg.blueLightFilter > 0) {
+      document.body.style.setProperty('--eye-care-opacity', (cfg.blueLightFilter / 100).toString());
+      document.body.classList.add('blue-light-filter');
+    } else {
+      document.body.style.removeProperty('--eye-care-opacity');
+      document.body.classList.remove('blue-light-filter');
+    }
+
+    syncSettingsUI(cfg);
   }
+
+  // ── Settings UI ─────────────────────────────────────────────────────────────
+  
+  const settingsDrawer = document.getElementById('settings-drawer');
+  const settingsBackdrop = document.getElementById('settings-backdrop');
+  
+  function toggleSettings() {
+    document.body.classList.toggle('settings-open');
+  }
+
+  function setupSettingsUI() {
+    if (!settingsDrawer) return;
+
+    // Close button & backdrop
+    document.getElementById('settings-close')?.addEventListener('click', toggleSettings);
+    settingsBackdrop?.addEventListener('click', toggleSettings);
+
+    // Controls
+    const ctrls = {
+      theme: document.getElementById('set-theme'),
+      fontFamily: document.getElementById('set-font'),
+      fontSize: document.getElementById('set-size'),
+      lineHeight: document.getElementById('set-lineheight'),
+      readingWidth: document.getElementById('set-width'),
+      blueLightFilter: document.getElementById('set-eyecare'),
+      scrollSync: document.getElementById('set-scrollsync')
+    };
+
+    // Value displays
+    const displays = {
+      fontSize: document.getElementById('val-size'),
+      lineHeight: document.getElementById('val-lineheight'),
+      blueLightFilter: document.getElementById('val-eyecare')
+    };
+
+    function bind(key, ctrl, type = 'change', isCheckbox = false) {
+      if (!ctrl) return;
+      ctrl.addEventListener(type, (e) => {
+        const val = isCheckbox ? e.target.checked : (type === 'input' ? parseFloat(e.target.value) : e.target.value);
+        
+        // Immediate local feedback
+        if (key === 'fontSize') {
+          displays.fontSize.textContent = val + 'px';
+          document.body.style.fontSize = val + 'px';
+          document.documentElement.style.setProperty('--reader-font-size', val + 'px');
+        } else if (key === 'lineHeight') {
+          displays.lineHeight.textContent = val.toFixed(2);
+          document.documentElement.style.setProperty('--reader-line-height', val);
+        } else if (key === 'blueLightFilter') {
+          displays.blueLightFilter.textContent = val + '%';
+          if (val > 0) {
+            document.body.style.setProperty('--eye-care-opacity', val / 100);
+            document.body.classList.add('blue-light-filter');
+          } else {
+            document.body.style.removeProperty('--eye-care-opacity');
+            document.body.classList.remove('blue-light-filter');
+          }
+        } else if (key === 'theme') {
+          document.documentElement.setAttribute('data-theme', val);
+        } else if (key === 'fontFamily') {
+          document.body.style.fontFamily = val;
+          document.documentElement.style.setProperty('--reader-font', val);
+        } else if (key === 'readingWidth') {
+          document.documentElement.style.setProperty('--reader-max-width', WIDTH_MAP[val] || '760px');
+          if (readerMain) {
+            readerMain.style.paddingLeft = val === 'full' ? '16px' : '32px';
+            readerMain.style.paddingRight = val === 'full' ? '16px' : '32px';
+          }
+        } else if (key === 'scrollSync') {
+          scrollSyncEnabled = val;
+        }
+
+        // Only send to extension host on change (not on every pixel of input slider drag)
+        if (type === 'change') {
+          vscode.postMessage({ type: 'updateSetting', key, value: val });
+        }
+      });
+      
+      // For range sliders, also bind input for real-time visual feedback before mouse up
+      if (type === 'change' && ctrl.type === 'range') {
+        bind(key, ctrl, 'input', false);
+      }
+    }
+
+    bind('theme', ctrls.theme);
+    bind('fontFamily', ctrls.fontFamily);
+    bind('fontSize', ctrls.fontSize);
+    bind('lineHeight', ctrls.lineHeight);
+    bind('readingWidth', ctrls.readingWidth);
+    bind('blueLightFilter', ctrls.blueLightFilter);
+    bind('scrollSync', ctrls.scrollSync, 'change', true);
+  }
+
+  function syncSettingsUI(cfg) {
+    if (!settingsDrawer) return;
+    
+    const trySet = (id, val, displayId, displayFmt) => {
+      const el = document.getElementById(id);
+      if (el) {
+        if (el.type === 'checkbox') el.checked = !!val;
+        else el.value = val;
+      }
+      if (displayId && val !== undefined) {
+        const dEl = document.getElementById(displayId);
+        if (dEl) dEl.textContent = displayFmt(val);
+      }
+    };
+
+    trySet('set-theme', cfg.theme || 'auto');
+    trySet('set-font', cfg.fontFamily);
+    trySet('set-size', cfg.fontSize, 'val-size', v => v + 'px');
+    trySet('set-lineheight', cfg.lineHeight, 'val-lineheight', v => v.toFixed(2));
+    trySet('set-width', cfg.readingWidth || 'medium');
+    trySet('set-eyecare', cfg.blueLightFilter || 0, 'val-eyecare', v => v + '%');
+    trySet('set-scrollsync', cfg.scrollSync);
+  }
+
+  setupSettingsUI();
+
 
   // ── Render content ──────────────────────────────────────────────────────────
   function renderContent(html, toc) {

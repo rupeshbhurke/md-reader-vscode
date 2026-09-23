@@ -49,33 +49,9 @@
         "category": "MD Reader"
       },
       {
-        "command": "mdReader.cycleTheme",
-        "title": "Cycle Theme",
-        "icon": "$(symbol-color)",
-        "category": "MD Reader"
-      },
-      {
-        "command": "mdReader.pickFontFamily",
-        "title": "Pick Font Family",
-        "icon": "$(symbol-string)",
-        "category": "MD Reader"
-      },
-      {
-        "command": "mdReader.pickFontSize",
-        "title": "Pick Font Size",
-        "icon": "$(text-size)",
-        "category": "MD Reader"
-      },
-      {
-        "command": "mdReader.toggleScrollSync",
-        "title": "Toggle Scroll Sync",
-        "icon": "$(link)",
-        "category": "MD Reader"
-      },
-      {
-        "command": "mdReader.pickWidth",
-        "title": "Pick Reading Width",
-        "icon": "$(layout-centered)",
+        "command": "mdReader.toggleSettings",
+        "title": "MD Reader Settings",
+        "icon": "$(gear)",
         "category": "MD Reader"
       },
       {
@@ -99,34 +75,14 @@
           "group": "navigation@1"
         },
         {
-          "command": "mdReader.cycleTheme",
+          "command": "mdReader.toggleSettings",
           "when": "activeWebviewPanelId == 'mdReaderPanel'",
           "group": "navigation@2"
         },
         {
-          "command": "mdReader.pickFontFamily",
-          "when": "activeWebviewPanelId == 'mdReaderPanel'",
-          "group": "navigation@3"
-        },
-        {
-          "command": "mdReader.pickFontSize",
-          "when": "activeWebviewPanelId == 'mdReaderPanel'",
-          "group": "navigation@4"
-        },
-        {
-          "command": "mdReader.toggleScrollSync",
-          "when": "activeWebviewPanelId == 'mdReaderPanel'",
-          "group": "navigation@5"
-        },
-        {
-          "command": "mdReader.pickWidth",
-          "when": "activeWebviewPanelId == 'mdReaderPanel'",
-          "group": "navigation@6"
-        },
-        {
           "command": "mdReader.refresh",
           "when": "activeWebviewPanelId == 'mdReaderPanel'",
-          "group": "navigation@7"
+          "group": "navigation@8"
         }
       ],
       "editor/title/context": [
@@ -228,6 +184,13 @@
           ],
           "description": "Syntax highlighting theme for code blocks."
         },
+        "mdReader.blueLightFilter": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Opacity percentage (0-100) of the warm amber Eye Care overlay. 0 = Off."
+        },
         "mdReader.autoRefresh": {
           "type": "boolean",
           "default": true,
@@ -263,8 +226,8 @@
     "typescript": "^5.3.0"
   },
   "dependencies": {
+    "github-slugger": "^2.0.0",
     "highlight.js": "^11.9.0",
-    "marked": "^11.1.0",
-    "marked-gfm-heading-id": "^3.1.3"
+    "marked": "^11.1.0"
   }
 }

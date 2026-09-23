@@ -11,6 +11,11 @@ node_modules/
 # Packaged extension
 *.vsix
 
+# windows-app build output (no nested .gitignore there)
+windows-app/dist/
+windows-app/dist-electron/
+windows-app/release/
+
 # VS Code test infrastructure
 .vscode-test/
 .vscode-test-web/
