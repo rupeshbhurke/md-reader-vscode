@@ -322,6 +322,54 @@ body.blue-light-filter::after {
   padding: 0;
 }
 
+/* ── Mermaid diagrams ──────────────────────────────────────────────────────── */
+/* Before mermaid.js loads/runs, this is the escaped diagram source as plain
+   text (also the fallback if loading or parsing fails) — style it like a
+   code block so it's still legible either way. */
+pre.mermaid {
+  margin: 1.5em 0;
+  padding: 1.1rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* Once mermaid replaces the element's content with an <svg>, center it and
+   let wide diagrams scroll rather than overflow the reading column. */
+pre.mermaid svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+pre.mermaid[data-processed] {
+  overflow-x: auto;
+  text-align: center;
+}
+
+/* ── Math (KaTeX) ──────────────────────────────────────────────────────────── */
+.katex-display {
+  margin: 1.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.2em 0;
+}
+
+.katex-error {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--code-text);
+  background: var(--code-bg);
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+}
+
 /* ── Blockquotes ───────────────────────────────────────────────────────────── */
 .md-blockquote {
   border-left: 4px solid var(--blockquote-border);

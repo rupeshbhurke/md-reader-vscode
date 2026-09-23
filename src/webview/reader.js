@@ -58,6 +58,11 @@
   let findDebounceTimer = null;
   const FIND_MAX_MATCHES = 5000;
 
+  // ── Mermaid state ────────────────────────────────────────────────────────────
+  // mermaid.min.js (~3.5MB) is loaded lazily — only once, only when a
+  // document actually contains a ```mermaid block.
+  let mermaidReadyPromise = null;
+
   // ── Width map ───────────────────────────────────────────────────────────────
   const WIDTH_MAP = {
     narrow: '640px',
@@ -76,6 +81,7 @@
         currentConfig = msg.config || {};
         applyConfig(currentConfig);
         renderContent(msg.html, msg.toc);
+        if (msg.hasMermaid) { renderMermaidDiagrams(); }
         break;
       case 'config':
         currentConfig = msg.config || {};
@@ -297,6 +303,57 @@
 
     // Reset progress bar
     updateProgressBar();
+  }
+
+  // ── Mermaid diagrams ─────────────────────────────────────────────────────────
+  function ensureMermaidLoaded() {
+    if (window.mermaid) { return Promise.resolve(); }
+    if (mermaidReadyPromise) { return mermaidReadyPromise; }
+
+    mermaidReadyPromise = new Promise((resolve, reject) => {
+      const vendor = window.__mdReaderVendor;
+      if (!vendor || !vendor.mermaidJsUri) {
+        reject(new Error('mermaid vendor URI missing'));
+        return;
+      }
+      const script = document.createElement('script');
+      script.nonce = vendor.nonce;
+      script.src = vendor.mermaidJsUri;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('failed to load mermaid.min.js'));
+      document.head.appendChild(script);
+    });
+
+    return mermaidReadyPromise;
+  }
+
+  function mermaidThemeFor(cfg) {
+    const theme = (cfg && cfg.theme) || 'auto';
+    if (theme === 'dark') { return 'dark'; }
+    if (theme === 'auto' && window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'default';
+  }
+
+  function renderMermaidDiagrams() {
+    ensureMermaidLoaded()
+      .then(() => {
+        window.mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: 'strict',
+          theme: mermaidThemeFor(currentConfig),
+        });
+        // suppressErrors: a malformed diagram leaves its element in an error
+        // state instead of throwing and aborting every other diagram on the
+        // page — the escaped source is still visible underneath either way.
+        return window.mermaid.run({ querySelector: '.mermaid', suppressErrors: true });
+      })
+      .catch((err) => {
+        // Load/parse failure — the raw (escaped) diagram source is already
+        // in the DOM as plain text, so the document still reads fine.
+        console.error('MD Reader: mermaid render failed', err);
+      });
   }
 
   // ── Copy buttons ────────────────────────────────────────────────────────────

@@ -1,12 +1,15 @@
-import { Marked, Renderer } from 'marked';
+import { Marked, Renderer, TokenizerAndRendererExtension } from 'marked';
 import GithubSlugger from 'github-slugger';
 import hljs from 'highlight.js';
+import katex from 'katex';
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export interface RenderedDocument {
   html: string;
   toc: TocEntry[];
+  /** True if the document contains at least one ```mermaid fenced block — tells the webview whether it needs to lazy-load mermaid.min.js. */
+  hasMermaid: boolean;
 }
 
 export interface TocEntry {
@@ -32,21 +35,24 @@ export interface TocEntry {
 export async function renderMarkdown(markdown: string): Promise<RenderedDocument> {
   currentToc = [];
   slugger.reset();
+  sawMermaid = false;
 
   const html = await marked.parse(markdown);
 
-  return { html, toc: currentToc };
+  return { html, toc: currentToc, hasMermaid: sawMermaid };
 }
 
 // ── Marked instance (configured once) ──────────────────────────────────────────
 
 let currentToc: TocEntry[] = [];
+let sawMermaid = false;
 const slugger = new GithubSlugger();
 
 const marked = new Marked({
   renderer: buildRenderer(),
   gfm: true,
   breaks: false,
+  extensions: [blockMathExtension(), inlineMathExtension()],
 });
 
 // ── Renderer ──────────────────────────────────────────────────────────────────
@@ -72,6 +78,16 @@ function buildRenderer() {
   // Code blocks — syntax highlighting + copy button + language label
   renderer.code = (code: string, language: string | undefined): string => {
     const lang = language || 'plaintext';
+
+    // ```mermaid fences render as diagrams, not highlighted code. The
+    // webview lazy-loads mermaid.min.js only when hasMermaid says it's
+    // needed; the raw (escaped) source stays in the DOM as a fallback if
+    // that load or the diagram parse fails.
+    if (lang === 'mermaid') {
+      sawMermaid = true;
+      return `<pre class="mermaid">${escapeHtml(code)}</pre>`;
+    }
+
     let highlighted: string;
     try {
       highlighted = lang && hljs.getLanguage(lang)
@@ -116,6 +132,76 @@ function buildRenderer() {
   };
 
   return renderer;
+}
+
+// ── Math (KaTeX) ─────────────────────────────────────────────────────────────
+//
+// Math is rendered host-side (here) rather than shipping KaTeX's JS to the
+// webview: renderToString() produces plain HTML + inline <span> markup, so
+// the webview only needs KaTeX's stylesheet (vendored — see
+// scripts/copy-vendor-assets.js), not its script. Faster, and avoids adding
+// another CSP surface.
+//
+// Registered as marked TokenizerAndRendererExtensions rather than a regex
+// pre-pass over the raw markdown: marked tries custom extension tokenizers
+// at each cursor position BEFORE its built-in ones (fenced code, inline
+// code), so a fence or code span starting at that position is always
+// tokenized whole, first — these tokenizers, anchored with `^`, never get a
+// chance to match a `$`/`$$` that's inside one.
+
+/** Block math: `$$` alone on a line, content, `$$` alone on a line. */
+function blockMathExtension(): TokenizerAndRendererExtension {
+  return {
+    name: 'blockMath',
+    level: 'block',
+    start(src) {
+      const i = src.indexOf('$$');
+      return i === -1 ? undefined : i;
+    },
+    tokenizer(src) {
+      const match = /^\$\$[ \t]*\n([\s\S]+?)\n\$\$(?:\n|$)/.exec(src);
+      if (!match) { return undefined; }
+      return { type: 'blockMath', raw: match[0], text: match[1].trim() };
+    },
+    renderer(token) {
+      return renderMath(token.text as string, true);
+    },
+  };
+}
+
+/**
+ * Inline math: `$...$`, single line, no space directly inside the
+ * delimiters (so "costs $5 and $10" doesn't get misread as math) and no
+ * digit immediately after the closing `$`. `\$` escapes a literal dollar.
+ */
+function inlineMathExtension(): TokenizerAndRendererExtension {
+  return {
+    name: 'inlineMath',
+    level: 'inline',
+    start(src) {
+      const i = src.indexOf('$');
+      return i === -1 ? undefined : i;
+    },
+    tokenizer(src) {
+      const match = /^\$(?!\s)((?:\\\$|[^\n$])+?)(?<!\\|\s)\$(?!\d)/.exec(src);
+      if (!match) { return undefined; }
+      return { type: 'inlineMath', raw: match[0], text: match[1].replace(/\\\$/g, '$') };
+    },
+    renderer(token) {
+      return renderMath(token.text as string, false);
+    },
+  };
+}
+
+function renderMath(tex: string, displayMode: boolean): string {
+  try {
+    return katex.renderToString(tex, { displayMode, throwOnError: true, strict: 'ignore' });
+  } catch {
+    // Malformed formula — show the original source rather than breaking
+    // the rest of the document's render.
+    const raw = escapeHtml(displayMode ? `$$\n${tex}\n$$` : `$${tex}$`);
+    return `<span class="katex-error" title="Invalid math syntax">${raw}</span>`;
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
