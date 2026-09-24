@@ -81,6 +81,12 @@
         "command": "mdReader.exportHtml",
         "title": "Export as HTML...",
         "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.showShortcuts",
+        "title": "Show Keyboard Shortcuts",
+        "icon": "$(question)",
+        "category": "MD Reader"
       }
     ],
     "keybindings": [
@@ -112,6 +118,11 @@
           "command": "mdReader.refresh",
           "when": "activeWebviewPanelId == 'mdReaderPanel'",
           "group": "navigation@8"
+        },
+        {
+          "command": "mdReader.showShortcuts",
+          "when": "activeWebviewPanelId == 'mdReaderPanel'",
+          "group": "navigation@9"
         }
       ],
       "editor/title/context": [
