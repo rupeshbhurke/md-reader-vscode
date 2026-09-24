@@ -1,7 +1,9 @@
 import { Marked, Renderer, TokenizerAndRendererExtension } from 'marked';
+import markedFootnote from 'marked-footnote';
 import GithubSlugger from 'github-slugger';
 import hljs from 'highlight.js';
 import katex from 'katex';
+import type { FrontMatterMode } from './configManager';
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
@@ -33,16 +35,122 @@ export interface TocEntry {
  * single `parse()` call runs its renderer callbacks synchronously (no
  * `await` interleaves mid-parse), so concurrent `renderMarkdown()` calls
  * for different documents can't interleave their TOC state.
+ *
+ * `frontMatterMode` controls a leading `---`-fenced YAML block: 'card'
+ * (default) renders it as a metadata card above the content, 'hide' strips
+ * it silently, 'raw' shows it as an ordinary (syntax-highlighted) yaml code
+ * block instead of interpreting it.
  */
-export async function renderMarkdown(markdown: string): Promise<RenderedDocument> {
+export async function renderMarkdown(
+  markdown: string,
+  frontMatterMode: FrontMatterMode = 'card'
+): Promise<RenderedDocument> {
   currentToc = [];
   slugger.reset();
   sawMermaid = false;
   taskIndex = 0;
 
-  const html = await marked.parse(markdown);
+  const { body, frontMatter, raw } = extractFrontMatter(markdown);
 
-  return { html, toc: currentToc, hasMermaid: sawMermaid, wordCount: countWords(markdown) };
+  let toParse = body;
+  let prefixHtml = '';
+  if (frontMatter && frontMatterMode === 'raw') {
+    toParse = '```yaml\n' + raw + '\n```\n\n' + body;
+  } else if (frontMatter && frontMatterMode === 'card') {
+    prefixHtml = renderFrontMatterCard(frontMatter);
+  }
+  // frontMatterMode === 'hide' (or no front matter at all): toParse is
+  // already just `body`, prefixHtml stays empty.
+
+  const html = prefixHtml + await marked.parse(toParse);
+
+  return { html, toc: currentToc, hasMermaid: sawMermaid, wordCount: countWords(body) };
+}
+
+// ── Front matter ─────────────────────────────────────────────────────────────
+//
+// A minimal, deliberately non-general YAML reader: scalars and simple lists
+// only (no nested objects, block scalars, flow collections, or multi-line
+// strings). That covers the overwhelming majority of real front matter
+// (title/author/date/tags), and a fuller YAML parser is a dependency this
+// doesn't need for that. Anything it can't make sense of is dropped rather
+// than mis-rendered — a missing field beats a wrong one.
+
+type FrontMatterData = Record<string, string | string[]>;
+
+function extractFrontMatter(markdown: string): { body: string; frontMatter: FrontMatterData | null; raw: string } {
+  const match = /^---\r?\n([\s\S]*?)\r?\n(?:---|\.\.\.)[ \t]*\r?\n/.exec(markdown);
+  if (!match) {
+    return { body: markdown, frontMatter: null, raw: '' };
+  }
+
+  const raw = match[1];
+  const frontMatter = parseSimpleYaml(raw);
+  const body = markdown.slice(match[0].length);
+
+  // Nothing recognizable — treat it as if there were no front matter at all
+  // rather than silently swallowing the block.
+  if (Object.keys(frontMatter).length === 0) {
+    return { body: markdown, frontMatter: null, raw: '' };
+  }
+
+  return { body, frontMatter, raw };
+}
+
+function parseSimpleYaml(block: string): FrontMatterData {
+  const result: FrontMatterData = {};
+  let currentList: string[] | null = null;
+
+  for (const line of block.split(/\r?\n/)) {
+    if (!line.trim()) { continue; }
+
+    const listItem = /^\s*-\s+(.*)$/.exec(line);
+    if (listItem && currentList) {
+      currentList.push(stripYamlQuotes(listItem[1].trim()));
+      continue;
+    }
+
+    const kv = /^([A-Za-z0-9_-]+):\s*(.*)$/.exec(line);
+    if (!kv) { continue; }
+    const [, key, value] = kv;
+
+    if (value === '') {
+      // Empty value — either a list starts on the following lines, or the
+      // key really is empty. If no list items follow, it's dropped
+      // (Object.keys().length === 0 check in extractFrontMatter handles an
+      // entirely-empty result).
+      currentList = [];
+      result[key] = currentList;
+    } else {
+      currentList = null;
+      result[key] = stripYamlQuotes(value.trim());
+    }
+  }
+
+  // Drop any key that ended up an empty list (declared but never populated)
+  for (const key of Object.keys(result)) {
+    const value = result[key];
+    if (Array.isArray(value) && value.length === 0) { delete result[key]; }
+  }
+
+  return result;
+}
+
+function stripYamlQuotes(value: string): string {
+  const match = /^(['"])(.*)\1$/.exec(value);
+  return match ? match[2] : value;
+}
+
+function renderFrontMatterCard(frontMatter: FrontMatterData): string {
+  const rows = Object.entries(frontMatter).map(([key, value]) => {
+    const label = escapeHtml(key.charAt(0).toUpperCase() + key.slice(1));
+    const valueHtml = Array.isArray(value)
+      ? value.map(v => `<span class="fm-tag">${escapeHtml(v)}</span>`).join('')
+      : `<span class="fm-scalar">${escapeHtml(value)}</span>`;
+    return `<div class="fm-row"><span class="fm-key">${label}</span><span class="fm-value">${valueHtml}</span></div>`;
+  }).join('\n');
+
+  return `<div class="front-matter-card">\n${rows}\n</div>\n`;
 }
 
 /**
@@ -59,7 +167,7 @@ function countWords(markdown: string): number {
     .replace(/\$[^$\n]*\$/g, ' ')              // inline math
     .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')     // images (alt text isn't "read")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')   // links — keep the link text
-    .replace(/^-{3,}$/gm, ' ')                 // hr / front-matter fences
+    .replace(/^-{3,}$/gm, ' ')                 // horizontal rules
     .replace(/[#>*_~`|]/g, ' ');                // remaining markdown punctuation
 
   const words = readable.trim().split(/\s+/).filter(Boolean);
@@ -80,6 +188,13 @@ const marked = new Marked({
   breaks: false,
   extensions: [blockMathExtension(), inlineMathExtension()],
 });
+
+// GFM footnotes (`[^1]` ... `[^1]: text`). markedFootnote() returns a full
+// MarkedExtension (its own tokenizers/renderer), not a single
+// TokenizerAndRendererExtension, so it's applied via .use() rather than
+// folded into the `extensions:` array above — still called exactly once at
+// module load, same rule as everything else here.
+marked.use(markedFootnote({ footnoteDivider: true }));
 
 // ── Renderer ──────────────────────────────────────────────────────────────────
 
