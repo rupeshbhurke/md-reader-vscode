@@ -108,6 +108,9 @@
       case 'find':
         openFindBar();
         break;
+      case 'toggleShortcuts':
+        toggleShortcutsHelp();
+        break;
       case 'print':
         // Triggered by the mdReader.exportPdf command. Any open overlay
         // would otherwise show up on the printed page/PDF too.

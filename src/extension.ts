@@ -48,6 +48,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.commands.registerCommand('mdReader.exportHtml', () => {
       panelManager.exportActiveAsHtml();
+    }),
+
+    vscode.commands.registerCommand('mdReader.showShortcuts', () => {
+      panelManager.postToActive({ type: 'toggleShortcuts' });
     })
   );
 
