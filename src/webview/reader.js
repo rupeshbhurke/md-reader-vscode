@@ -219,7 +219,10 @@
     function bind(key, ctrl, type = 'change', isCheckbox = false) {
       if (!ctrl) return;
       ctrl.addEventListener(type, (e) => {
-        const val = isCheckbox ? e.target.checked : (type === 'input' ? parseFloat(e.target.value) : e.target.value);
+        // Range sliders must always yield a number, on both the 'input' and 'change'
+        // events: a string would be saved to settings as-is, then fail the
+        // typeof checks in applyConfig and make the change revert on release.
+        const val = isCheckbox ? e.target.checked : (ctrl.type === 'range' ? parseFloat(e.target.value) : e.target.value);
         
         // Immediate local feedback
         if (key === 'fontSize') {

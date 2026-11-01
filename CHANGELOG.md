@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Changing the reading font size or family in the settings drawer no longer resizes/restyles the drawer, table of contents, or find bar — typography now applies to the document only
 - The settings drawer no longer dims the rest of the reader, so live changes (eye care, theme, font) are visible while adjusting
 - Eye Care (blue light) filter was nearly invisible on dark themes; it now uses a normal amber wash that works on light, sepia and dark
+- Eye Care and Line Height sliders reverted (or never saved) when released: the release handler sent the value as a string instead of a number
 
 ---
 
