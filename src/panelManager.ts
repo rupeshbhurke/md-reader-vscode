@@ -590,9 +590,9 @@ ${mermaidScript}
             <button type="button" id="te-export" title="Export the selected custom theme to a .json file">Export</button>
             <button type="button" id="te-export-all" title="Export every custom theme to one .json file">Export all</button>
             <button type="button" id="te-import" title="Import theme .json files">Import…</button>
-            <button type="button" id="te-add-starters" title="Copy all starter themes into My themes so you can edit them">Add starter themes</button>
+            <button type="button" id="te-add-starters" title="Copy all starter themes into My themes as independent, fully editable copies">Add starter themes</button>
           </div>
-          <p class="te-hint">Themes are saved in your VS Code user settings, so they survive extension updates.</p>
+          <p class="te-hint">Themes are saved in your VS Code user settings, so they survive extension updates. Editing a starter theme saves only your changes and keeps following the starter.</p>
         </div>
       </details>
 

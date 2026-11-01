@@ -24,6 +24,7 @@ esbuild.buildSync({
     path.join(root, 'src', 'textDecode.ts'),
     path.join(root, 'src', 'layouts.ts'),
     path.join(root, 'src', 'layoutLoader.ts'),
+    path.join(root, 'src', 'markdownRenderer.ts'),
   ],
   bundle: true,
   platform: 'node',

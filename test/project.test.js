@@ -116,3 +116,8 @@ test('the .vsix keeps shipping the starter themes and keeps dev files out', () =
     assert.ok(ignore.includes(dev), `.vscodeignore should exclude ${dev}`);
   }
 });
+
+test('the customThemes schema allows `from` (additionalProperties is false, so a missing entry would reject saved tweaks)', () => {
+  const props = JSON.parse(readText('package.json')).contributes.configuration.properties['mdReader.customThemes'].additionalProperties.properties;
+  assert.ok(props.from, 'schema is missing `from`');
+});

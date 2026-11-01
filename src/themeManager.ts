@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { ConfigManager } from './configManager';
 import {
   CUSTOM_PREFIX, MAX_THEMES, ThemeFileEntry, buildThemeFile, isValidId,
-  parseThemeFile, sanitizeTheme, slugify, uniqueId,
+  parseThemeFile, resolveTheme, sanitizeTheme, slugify, uniqueId,
 } from './themes';
 
 type ConflictChoice = 'Replace' | 'Keep both' | 'Skip';
@@ -25,12 +25,13 @@ export class ThemeManager {
    * `id` set + existing → overwrite that theme; otherwise a new id is derived
    * from the label. Everything is re-validated here: the webview is not trusted.
    */
-  async save(payload: { id?: unknown; label?: unknown; base?: unknown; colors?: unknown }): Promise<void> {
+  async save(payload: { id?: unknown; label?: unknown; base?: unknown; colors?: unknown; from?: unknown }): Promise<void> {
     const theme = sanitizeTheme(payload);
     if (!theme || typeof payload.label !== 'string' || !payload.label.trim()) {
       vscode.window.showWarningMessage('MD Reader: give the theme a name before saving.');
       return;
     }
+    if (theme.from && !this.config.starters[theme.from]) { delete theme.from; }
     const themes = this.config.getSavedThemes();
     let id: string;
     if (typeof payload.id === 'string' && isValidId(payload.id) && themes[payload.id]) {
@@ -66,7 +67,8 @@ export class ThemeManager {
     const themes = this.config.getSavedThemes();
     const entries: ThemeFileEntry[] = Object.keys(themes)
       .filter(id => !ids || ids.includes(id))
-      .map(id => ({ id, ...themes[id] }));
+      // A tweaked starter is exported with the starter's colours filled in, so the file works on a machine without that starter.
+      .map(id => { const { from, ...full } = resolveTheme(themes[id], this.config.starters); return { id, ...full }; });
     if (entries.length === 0) {
       vscode.window.showInformationMessage('MD Reader: there are no custom themes to export.');
       return false;

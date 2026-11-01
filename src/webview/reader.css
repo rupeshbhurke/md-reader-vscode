@@ -395,6 +395,45 @@ h3:hover > .heading-anchor,
 }
 
 /* ── Mermaid diagrams ──────────────────────────────────────────────────────── */
+/* Graphviz diagrams arrive as finished SVG (rendered on the extension host).
+   Graphviz paints in fixed black/white, so map those onto the theme — this
+   keeps diagrams legible in dark themes and needs no re-render on a theme
+   change. Colours a diagram sets itself are left alone. */
+.graphviz {
+  margin: 1.5em 0;
+  text-align: center;
+  overflow-x: auto;
+}
+.graphviz svg {
+  max-width: 100%;
+  height: auto;
+}
+.graphviz svg text { font-family: var(--font-ui); }
+/* Graphviz sets no fill on text that uses the default colour (black). */
+.graphviz svg text:not([fill]) { fill: var(--text); }
+.graphviz svg [fill="black"] { fill: var(--text); }
+.graphviz svg [stroke="black"] { stroke: var(--text); }
+.graphviz svg polygon[fill="white"] { fill: transparent; }
+.graphviz svg polygon[stroke="transparent"] { stroke: none; }
+/* Invalid source: show it like a code block with the reason underneath. */
+pre.graphviz-error {
+  text-align: left;
+  padding: calc(1.1 * var(--font-size)) calc(1.2 * var(--font-size));
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  white-space: pre-wrap;
+}
+pre.graphviz-error::after {
+  content: "Graphviz: " attr(data-error);
+  display: block;
+  margin-top: 0.8em;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+}
+
 /* Before mermaid.js loads/runs, this is the escaped diagram source as plain
    text (also the fallback if loading or parsing fails) — style it like a
    code block so it's still legible either way. */
@@ -1445,7 +1484,7 @@ body.lightbox-open #image-lightbox {
   }
 
   /* Don't split these across a page break where avoidable */
-  .code-block, .md-figure, .table-wrap, pre.mermaid, .katex-display {
+  .code-block, .md-figure, .table-wrap, pre.mermaid, .graphviz, .katex-display {
     break-inside: avoid;
   }
 

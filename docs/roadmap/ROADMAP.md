@@ -1,13 +1,13 @@
 # MD Reader roadmap
 
-Last updated: 2026-11-02 (Phases 1–4 released; Phase 5 implemented, awaiting a real-editor test and release). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
+Last updated: 2026-11-02 (Phases 1–5 released; Phase 6 implemented, awaiting a real-editor test and release). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
 
 ## Status
 
 | | |
 |---|---|
-| Latest release | `v0.4.0` (Phase 4; also carries Phase 3 and the `showTOC` removal) |
-| In flight | `feat/theme-system-v2` — Phase 5, version `0.5.0`: layouts, grouped theme files, version/category, dropdown categories. Implemented, 77 tests, checked in a browser harness; not yet tried in a real editor |
+| Latest release | `v0.5.0` (Phase 5: layouts and theme format v2) |
+| In flight | `feat/phase6-graphviz` — Phase 6, version `0.6.0`: Graphviz, large-document fix, starter tweaks. Implemented, 93 tests, checked in a browser harness; not yet tried in a real editor |
 | Known issues | none open. The dead `mdReader.showTOC` setting found by the Phase 3 tests has been removed (the TOC always works) |
 | Not in place | verified Marketplace publisher and the `VSCE_PAT` / `OVSX_PAT` secrets (maintainer — see `docs/RELEASING.md`) |
 | Unresolved | F5 debugging crashed the extension host in Windsurf. It looked like a host problem, not this repo's code |
@@ -69,11 +69,11 @@ No new code.
 
 Not done, deliberately (candidates for later): user-created layouts and a layout editor; a theme that recommends a layout; a "reading style" preset pairing a theme with a layout; using `version` to offer updates to unmodified copies of starters.
 
-## Phase 6 — 0.6.0 and later
+## Phase 6 — 0.6.0: diagrams, performance, starter tweaks — IMPLEMENTED, awaiting release
 
-- Graphviz diagrams, lazy-loaded like Mermaid.
-- Large-document performance: measure first, optimise only if genuinely slow.
-- Per-theme override, so a starter can be tweaked without copying it.
+- 6.1 Done: Graphviz (` ```dot ` / ` ```graphviz `). *Interpretation:* rendered on the extension host with a bundled WebAssembly engine, not lazy-loaded in the webview like Mermaid — it also works in HTML export and PDF, and the CSP is unchanged. Cost: the package grows by about 1.4 MB; the engine loads on first use.
+- 6.2 Measured first, then fixed: host render of a 1.7 MB document took 66 s. Cause: `marked-footnote` is quadratic. Documents without `[^` now use a second `Marked` instance without it (0.6 s). **Not yet done:** documents that do use footnotes stay quadratic, and the webview side (putting a multi-megabyte HTML string into the DOM) was not measured.
+- 6.3 Done: tweak a starter without copying it — a saved theme can carry `from: <starter id>` and store only its changes (see `docs/THEME-FORMAT.md`).
 
 ---
 

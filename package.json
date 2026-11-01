@@ -2,7 +2,7 @@
   "name": "md-reader",
   "displayName": "MD Reader",
   "description": "A reading-focused, fully customizable Markdown viewer with independent multi-document support.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "publisher": "rupeshbhurke",
   "author": {
     "name": "Rupesh H Bhurke",
@@ -223,6 +223,11 @@
               "author": {
                 "type": "string",
                 "maxLength": 60
+              },
+              "from": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]{0,39}$",
+                "description": "Id of a starter theme this theme tweaks. Only the colors you changed are stored; the rest follows the starter."
               },
               "base": {
                 "type": "string",
@@ -685,6 +690,7 @@
     "typescript": "^5.3.0"
   },
   "dependencies": {
+    "@viz-js/viz": "^3.31.0",
     "github-slugger": "^2.0.0",
     "highlight.js": "^11.9.0",
     "katex": "^0.18.7",

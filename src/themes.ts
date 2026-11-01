@@ -68,6 +68,12 @@ export interface CustomTheme {
   version?: string;
   /** Optional dropdown group (e.g. "Light", "Dark"); only used for starter themes. */
   category?: string;
+  /**
+   * Id of a starter theme this one tweaks. `colors` then holds only the changes:
+   * everything else — and the `base` — comes from that starter, so improvements to
+   * the starter flow through. Ignored (base + own colours) if the starter is gone.
+   */
+  from?: string;
 }
 export type CustomThemes = Record<string, CustomTheme>;
 
@@ -173,6 +179,7 @@ export function sanitizeTheme(raw: unknown, fallbackLabel = 'Theme'): CustomThem
   if (author) { theme.author = author; }
   if (typeof r.version === 'string' && VERSION_RE.test(r.version.trim())) { theme.version = r.version.trim(); }
   if (typeof r.category === 'string' && CATEGORY_RE.test(r.category.trim())) { theme.category = r.category.trim(); }
+  if (typeof r.from === 'string' && ID_RE.test(r.from)) { theme.from = r.from; }
   return theme;
 }
 
@@ -196,9 +203,19 @@ export function sanitizeThemes(raw: unknown): CustomThemes {
  * are read-only until added to the user's own themes.
  */
 export function lookupTheme(theme: string, custom: CustomThemes, starters: CustomThemes): CustomTheme | undefined {
-  if (theme.startsWith(CUSTOM_PREFIX)) { return custom[theme.slice(CUSTOM_PREFIX.length)]; }
+  if (theme.startsWith(CUSTOM_PREFIX)) {
+    const own = custom[theme.slice(CUSTOM_PREFIX.length)];
+    return own && resolveTheme(own, starters);
+  }
   if (theme.startsWith(STARTER_PREFIX)) { return starters[theme.slice(STARTER_PREFIX.length)]; }
   return undefined;
+}
+
+/** A theme that tweaks a starter (`from`) with the starter's base and colours underneath its own; any other theme is returned as is. */
+export function resolveTheme(theme: CustomTheme, starters: CustomThemes): CustomTheme {
+  const parent = theme.from ? starters[theme.from] : undefined;
+  if (!parent) { return theme; }
+  return { ...theme, base: parent.base, colors: { ...parent.colors, ...theme.colors } };
 }
 
 /** The built-in theme a `theme` setting value ultimately renders on. */
