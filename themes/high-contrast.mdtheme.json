@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "high-contrast",
+  "label": "High Contrast",
+  "base": "dark",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#000000",
+    "bgAlt": "#0a0a0a",
+    "surface": "#000000",
+    "border": "#ffffff",
+    "text": "#ffffff",
+    "textMuted": "#e0e0e0",
+    "accent": "#ffd400",
+    "selection": "#1a4a8a",
+    "codeBg": "#1a1a1a",
+    "codeText": "#ffb86c",
+    "preBg": "#000000",
+    "preText": "#ffffff",
+    "quoteBg": "#0f0f0f",
+    "tableStripe": "#141414"
+  }
+}

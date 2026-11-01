@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "night-owl",
+  "label": "Night Owl",
+  "base": "dark",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#011627",
+    "bgAlt": "#0b2942",
+    "surface": "#0a2133",
+    "border": "#1d3b53",
+    "text": "#d6deeb",
+    "textMuted": "#8aa0b4",
+    "accent": "#82aaff",
+    "selection": "#1d3b53",
+    "codeBg": "#0b253a",
+    "codeText": "#f78c6c",
+    "preBg": "#010e1a",
+    "preText": "#d6deeb",
+    "quoteBg": "#0a2236",
+    "tableStripe": "#08202f"
+  }
+}

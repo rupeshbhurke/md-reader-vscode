@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "rose-pine-dawn",
+  "label": "Rosé Pine Dawn",
+  "base": "light",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#faf4ed",
+    "bgAlt": "#f2e9e1",
+    "surface": "#fffaf3",
+    "border": "#dfdad9",
+    "text": "#4d4870",
+    "textMuted": "#6d6988",
+    "accent": "#286983",
+    "selection": "#dfdad9",
+    "codeBg": "#f2e9e1",
+    "codeText": "#984b61",
+    "preBg": "#26233a",
+    "preText": "#e0def4",
+    "quoteBg": "#f4ede6",
+    "tableStripe": "#f6efe8"
+  }
+}

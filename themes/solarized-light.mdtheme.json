@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "solarized-light",
+  "label": "Solarized Light",
+  "base": "light",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#fdf6e3",
+    "bgAlt": "#eee8d5",
+    "surface": "#f7f0dc",
+    "border": "#ddd6c1",
+    "text": "#3b5159",
+    "textMuted": "#566d75",
+    "accent": "#1b67a5",
+    "selection": "#cfe3ee",
+    "codeBg": "#eee8d5",
+    "codeText": "#b0245f",
+    "preBg": "#002b36",
+    "preText": "#a9b7b8",
+    "quoteBg": "#f2ecd6",
+    "tableStripe": "#f5eed9"
+  }
+}

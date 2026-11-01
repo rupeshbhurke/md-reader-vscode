@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "paper",
+  "label": "Paper",
+  "base": "light",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#fbfaf7",
+    "bgAlt": "#f1efe9",
+    "surface": "#ffffff",
+    "border": "#e2ded3",
+    "text": "#222222",
+    "textMuted": "#5f5b53",
+    "accent": "#1a5fb4",
+    "selection": "#d7e3f4",
+    "codeBg": "#f0ede6",
+    "codeText": "#a3341b",
+    "preBg": "#24272e",
+    "preText": "#e6e6e6",
+    "quoteBg": "#f4f2ec",
+    "tableStripe": "#f7f5f0"
+  }
+}

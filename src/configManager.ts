@@ -1,15 +1,19 @@
 import * as vscode from 'vscode';
+import { CustomThemes, resolveThemeValue, sanitizeThemes } from './themes';
 
 const THEMES = ['auto', 'light', 'dark', 'sepia'] as const;
 const WIDTHS  = ['narrow', 'medium', 'wide', 'wider', 'ultra', 'full'] as const;
 const FRONT_MATTER_MODES = ['card', 'hide', 'raw'] as const;
 
-export type Theme = typeof THEMES[number];
+export type BuiltinTheme = typeof THEMES[number];
+/** A built-in theme name, or `custom:<id>` for a user theme (see themes.ts). */
+export type Theme = string;
 export type ReadingWidth = typeof WIDTHS[number];
 export type FrontMatterMode = typeof FRONT_MATTER_MODES[number];
 
 export interface ReaderConfig {
   theme: Theme;
+  customThemes: CustomThemes;
   fontFamily: string;
   fontSize: number;
   lineHeight: number;
@@ -39,6 +43,7 @@ export const SETTABLE_KEYS: readonly (keyof ReaderConfig)[] = [
 /** Defaults for every setting, keyed by its ReaderConfig field name (not its `mdReader.` id). */
 const DEFAULTS: ReaderConfig = {
   theme: 'auto',
+  customThemes: {},
   fontFamily: "Georgia, 'Times New Roman', serif",
   fontSize: 17,
   lineHeight: 1.85,
@@ -54,13 +59,34 @@ const DEFAULTS: ReaderConfig = {
 };
 
 export class ConfigManager {
+  /** Starter themes loaded from the extension's `themes/` folder at activation (read-only). */
+  starters: CustomThemes = {};
+
   get(): ReaderConfig {
     const cfg = vscode.workspace.getConfiguration('mdReader');
     const result = {} as ReaderConfig;
     for (const key of Object.keys(DEFAULTS) as (keyof ReaderConfig)[]) {
       (result as any)[key] = cfg.get(key, DEFAULTS[key]);
     }
+    // Themes come from user-editable settings.json: never trust the shape,
+    // and a `theme` pointing at a deleted custom theme falls back to auto.
+    result.customThemes = sanitizeThemes(result.customThemes);
+    result.theme = resolveThemeValue(result.theme, result.customThemes, this.starters);
     return result;
+  }
+
+  /**
+   * The user's own saved themes, as written at the user (Global) level —
+   * the only level this extension ever writes, so workspace-level entries
+   * are never copied into user settings by accident.
+   */
+  getSavedThemes(): CustomThemes {
+    const inspected = vscode.workspace.getConfiguration('mdReader').inspect<CustomThemes>('customThemes');
+    return sanitizeThemes(inspected?.globalValue);
+  }
+
+  async setSavedThemes(themes: CustomThemes): Promise<void> {
+    await this.set('customThemes', themes);
   }
 
   /** Persist a single setting. `key` is the ReaderConfig field name, which matches its `mdReader.<key>` id. */
@@ -69,7 +95,7 @@ export class ConfigManager {
       .update(key, value, vscode.ConfigurationTarget.Global);
   }
 
-  nextTheme(current: Theme): Theme {
+  nextTheme(current: BuiltinTheme): BuiltinTheme {
     const idx = THEMES.indexOf(current);
     return THEMES[(idx + 1) % THEMES.length];
   }

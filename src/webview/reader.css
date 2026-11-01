@@ -945,6 +945,125 @@ input:checked + .slider:before {
 }
 
 /* Backdrop */
+/* ── Theme editor (settings drawer) ───────────────────────────────────────── */
+.theme-editor > summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  padding: 4px 0;
+  user-select: none;
+}
+
+.theme-editor-body {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.theme-editor-body > label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.theme-editor-body input[type="text"],
+.theme-editor-body select {
+  width: 100%;
+  padding: 7px 8px;
+  background-color: var(--bg-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.theme-editor-body input[type="text"]:focus,
+.theme-editor-body select:focus {
+  border-color: var(--accent);
+}
+
+.te-group {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-subtle);
+}
+
+.te-row {
+  display: grid;
+  grid-template-columns: 1fr 44px 22px;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.te-row input[type="color"] {
+  width: 44px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+
+.te-reset {
+  visibility: hidden;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.te-row.te-overridden .te-reset { visibility: visible; }
+.te-reset:hover { color: var(--accent); }
+
+.te-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.te-buttons button {
+  padding: 5px 10px;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.te-buttons button:hover:not(:disabled) { border-color: var(--accent); }
+.te-buttons button:disabled { opacity: 0.45; cursor: default; }
+
+.te-buttons .te-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.te-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
 #settings-backdrop {
   position: fixed;
   top: 0;

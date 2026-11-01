@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "github-light",
+  "label": "GitHub Light",
+  "base": "light",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#ffffff",
+    "bgAlt": "#f6f8fa",
+    "surface": "#ffffff",
+    "border": "#d0d7de",
+    "text": "#1f2328",
+    "textMuted": "#59636e",
+    "accent": "#0969da",
+    "selection": "#b6e3ff",
+    "codeBg": "#eaeef2",
+    "codeText": "#cf222e",
+    "preBg": "#0d1117",
+    "preText": "#e6edf3",
+    "quoteBg": "#f3f6fa",
+    "tableStripe": "#f6f8fa"
+  }
+}
