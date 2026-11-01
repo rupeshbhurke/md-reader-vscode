@@ -22,8 +22,3 @@ jobs:
         with:
           files: '*.vsix'
           generate_release_notes: true
-      # Optional: publish to the Marketplace
-      - run: npx vsce publish --no-dependencies -p ${{ secrets.VSCE_PAT }}
-        if: ${{ env.HAS_PAT == 'true' }}
-        env:
-          HAS_PAT: ${{ secrets.VSCE_PAT != '' }}

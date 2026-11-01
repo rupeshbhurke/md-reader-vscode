@@ -2,7 +2,7 @@
   "name": "md-reader",
   "displayName": "MD Reader",
   "description": "A reading-focused, fully customizable Markdown viewer with independent multi-document support.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "rupeshbhurke",
   "author": {
     "name": "Rupesh H Bhurke",
