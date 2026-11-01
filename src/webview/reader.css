@@ -201,10 +201,11 @@ body.blue-light-filter::after {
   left: 0;
   width: 100vw;
   height: 100vh;
-  /* A warm, amber overlay to reduce blue spectrum */
-  background-color: rgba(255, 170, 0, var(--eye-care-opacity, 0.15));
-  /* multiply blends the amber over the underlying colors effectively */
-  mix-blend-mode: multiply;
+  /* A warm, amber wash to reduce blue light. Normal blending, not multiply:
+     multiply over a dark background stays almost black, so the filter was
+     invisible in dark themes. The slider maps 0-100% to 0-60% alpha so text
+     stays readable at the top end. */
+  background-color: rgba(255, 150, 0, calc(var(--eye-care-opacity, 0.15) * 0.6));
   pointer-events: none;
   z-index: 9999;
 }
@@ -950,15 +951,15 @@ input:checked + .slider:before {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.3);
-  opacity: 0;
+  /* Transparent on purpose: a dimming layer would hide the real effect of
+     live-preview settings (eye care tint, theme, font). It only exists so a
+     click outside the drawer closes it. */
+  background: transparent;
   pointer-events: none;
-  z-index: 9999;
-  transition: opacity 0.3s ease;
+  z-index: 9998;
 }
 
 body.settings-open #settings-backdrop {
-  opacity: 1;
   pointer-events: auto;
 }
 
