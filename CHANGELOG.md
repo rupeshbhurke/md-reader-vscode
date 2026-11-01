@@ -6,6 +6,28 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.2.0] — 2026-11-01
+
+### Added
+- Mermaid diagrams (lazy-loaded) and KaTeX math (`$inline$`, `$$block$$`)
+- GFM footnotes and YAML front matter (`mdReader.frontMatter`: card / hide / raw)
+- Find in document (Ctrl/Cmd+F), reading-mode keyboard shortcuts and a `?` shortcuts help overlay
+- Estimated reading time and word count (`mdReader.readingSpeed`)
+- Interactive task lists, smart link navigation, heading anchor links, image lightbox, scroll-position persistence
+- Export as PDF (print stylesheet) and as standalone HTML (`mdReader.export.embedImages`)
+- Custom CSS override (`mdReader.customCssPath`)
+- Auto-refresh also on external file changes
+- GitHub Actions workflow that builds the `.vsix` and publishes a GitHub Release on `v*` tags
+
+### Changed
+- Publisher/author metadata now point to rupeshbhurke
+- `.vsix` is ~2.6 MB (was ~283 MB, `windows-app/` was being packaged)
+
+### Fixed
+- Settings drawer used undefined CSS custom properties
+
+---
+
 ## [0.1.0] â€” 2024
 
 ### Added
