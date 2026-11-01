@@ -43,6 +43,7 @@
   let tocOpen = false;
   let currentConfig = {};
   let themeTokens = [];          // [{key,label,group,vars}] - sent by the host with each 'update'
+  let layouts = {};              // layouts: {id: {label, vars:{--css-var: value}}} - sent with each 'update'
   let starters = {};             // starter themes shipped in themes/ {id: {label,base,colors}} - same
   let currentFileName = '';
   let currentWordCount = 0;
@@ -89,6 +90,7 @@
     switch (msg.type) {
       case 'update':
         if (msg.starters) { starters = msg.starters; }
+        if (msg.layouts) { layouts = msg.layouts; }
         if (msg.themeTokens) { themeTokens = msg.themeTokens; buildThemeEditorRows(); }
         currentConfig = msg.config || {};
         currentFileName = msg.fileName || '';
@@ -153,6 +155,8 @@
     // Theme (built-in, or a custom theme = base theme + colour overrides)
     rebuildThemeOptions(cfg);
     applyTheme(cfg);
+    rebuildLayoutOptions();
+    applyLayout(cfg);
 
     // Typography
     if (cfg.fontFamily) {
@@ -265,13 +269,50 @@
     root.setAttribute('data-code-theme', name);
   }
 
+  // Layout = heading/paragraph typography, independent of the colour theme.
+  // The selected layout's CSS variables are set inline on <html>; switching
+  // layouts first removes the previous layout's variables so nothing lingers.
+  let appliedLayoutVars = [];
+
+  function applyLayout(cfg) {
+    const root = document.documentElement;
+    appliedLayoutVars.forEach(function (v) { root.style.removeProperty(v); });
+    appliedLayoutVars = [];
+    const layout = layouts[cfg.layout] || layouts.standard;
+    if (!layout) { return; }
+    Object.keys(layout.vars).forEach(function (v) {
+      root.style.setProperty(v, layout.vars[v]);
+      appliedLayoutVars.push(v);
+    });
+  }
+
+  function rebuildLayoutOptions() {
+    const sel = document.getElementById('set-layout');
+    if (!sel) { return; }
+    const ids = Object.keys(layouts).sort(function (a, b) {
+      if (a === 'standard') { return -1; }
+      if (b === 'standard') { return 1; }
+      return layouts[a].label.localeCompare(layouts[b].label);
+    });
+    const signature = ids.join(',');
+    if (sel.dataset.sig === signature) { return; }
+    sel.dataset.sig = signature;
+    while (sel.firstChild) { sel.removeChild(sel.firstChild); }
+    ids.forEach(function (id) {
+      const o = document.createElement('option');
+      o.value = id;
+      o.textContent = layouts[id].label;
+      sel.appendChild(o);
+    });
+  }
+
   function rebuildThemeOptions(cfg) {
     const sel = document.getElementById('set-theme');
     if (!sel) { return; }
     const ids = Object.keys(cfg.customThemes || {});
     const starterIds = Object.keys(starters);
     const signature = ids.map(function (id) { return id + ':' + cfg.customThemes[id].label; }).join('|')
-      + '#' + starterIds.join(',');
+      + '#' + starterIds.map(function (id) { return id + ':' + (starters[id].category || ''); }).join(',');
     if (sel.dataset.sig === signature) { return; }
     sel.dataset.sig = signature;
     Array.prototype.slice.call(sel.querySelectorAll('optgroup')).forEach(function (g) { g.remove(); });
@@ -288,7 +329,24 @@
       sel.appendChild(group);
     };
     addGroup('My themes', 'custom:', cfg.customThemes || {}, ids);
-    addGroup('Starter themes', 'starter:', starters, starterIds);
+    // Starter themes are grouped by their `category` (Light / Dark / Accessible ...) when
+    // they have more than one; a single category (or none) stays one "Starter themes" group.
+    const byCategory = {};
+    starterIds.forEach(function (id) {
+      const cat = starters[id].category || 'Other';
+      (byCategory[cat] = byCategory[cat] || []).push(id);
+    });
+    const preferred = ['Light', 'Dark', 'Accessible'];
+    const cats = Object.keys(byCategory).sort(function (a, b) {
+      const ia = preferred.indexOf(a), ib = preferred.indexOf(b);
+      if (ia !== -1 || ib !== -1) { return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib); }
+      return a.localeCompare(b);
+    });
+    if (cats.length <= 1) {
+      addGroup('Starter themes', 'starter:', starters, starterIds);
+    } else {
+      cats.forEach(function (cat) { addGroup('Starter \u2014 ' + cat, 'starter:', starters, byCategory[cat]); });
+    }
   }
 
   function readVar(name) {
@@ -465,6 +523,7 @@
     // Controls
     const ctrls = {
       theme: document.getElementById('set-theme'),
+      layout: document.getElementById('set-layout'),
       fontFamily: document.getElementById('set-font'),
       fontSize: document.getElementById('set-size'),
       lineHeight: document.getElementById('set-lineheight'),
@@ -504,6 +563,9 @@
             document.body.style.removeProperty('--eye-care-opacity');
             document.body.classList.remove('blue-light-filter');
           }
+        } else if (key === 'layout') {
+          currentConfig.layout = val;
+          applyLayout(currentConfig);
         } else if (key === 'theme') {
           // Picking another theme discards unsaved editor changes.
           editor.dirty = false;
@@ -534,6 +596,7 @@
     }
 
     bind('theme', ctrls.theme);
+    bind('layout', ctrls.layout);
     bind('fontFamily', ctrls.fontFamily);
     bind('fontSize', ctrls.fontSize);
     bind('lineHeight', ctrls.lineHeight);
@@ -558,6 +621,7 @@
     };
 
     trySet('set-theme', cfg.theme || 'auto');
+    trySet('set-layout', cfg.layout || 'standard');
     trySet('set-font', cfg.fontFamily);
     trySet('set-size', cfg.fontSize, 'val-size', v => v + 'px');
     trySet('set-lineheight', cfg.lineHeight, 'val-lineheight', v => v.toFixed(2));

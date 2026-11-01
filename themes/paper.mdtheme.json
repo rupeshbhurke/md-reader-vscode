@@ -1,33 +1,47 @@
 {
-  "mdReaderTheme": 1,
+  "mdReaderTheme": 2,
   "id": "paper",
   "label": "Paper",
   "base": "light",
+  "category": "Light",
   "author": "MD Reader starter pack",
+  "version": "1.0.0",
   "colors": {
-    "bg": "#fbfaf7",
-    "bgAlt": "#f1efe9",
-    "surface": "#ffffff",
-    "border": "#e2ded3",
-    "text": "#222222",
-    "textMuted": "#5f5b53",
-    "accent": "#1a5fb4",
-    "selection": "#d7e3f4",
-    "codeBg": "#f0ede6",
-    "codeText": "#a3341b",
-    "preBg": "#f0ede6",
-    "preText": "#222222",
-    "quoteBg": "#f4f2ec",
-    "tableStripe": "#f7f5f0",
-    "hlKeyword": "#a3341b",
-    "hlString": "#2e6f3e",
-    "hlComment": "#66625a",
-    "hlNumber": "#6b3fa0",
-    "hlTitle": "#1a5fb4",
-    "hlType": "#8a5a00",
-    "hlVariable": "#0b6b6b",
-    "hlAttr": "#1a5fb4",
-    "hlMeta": "#7a4b00",
-    "hlBuiltIn": "#8a3b00"
+    "surfaces": {
+      "page": "#fbfaf7",
+      "alt": "#f1efe9",
+      "panel": "#ffffff",
+      "quote": "#f4f2ec",
+      "stripe": "#f7f5f0"
+    },
+    "lines": {
+      "border": "#e2ded3"
+    },
+    "ink": {
+      "primary": "#222222",
+      "muted": "#5f5b53"
+    },
+    "emphasis": {
+      "link": "#1a5fb4",
+      "selection": "#d7e3f4"
+    },
+    "code": {
+      "inlineBackground": "#f0ede6",
+      "inlineText": "#a3341b",
+      "blockBackground": "#f0ede6",
+      "blockText": "#222222"
+    },
+    "syntax": {
+      "keyword": "#a3341b",
+      "string": "#2e6f3e",
+      "comment": "#66625a",
+      "number": "#6b3fa0",
+      "title": "#1a5fb4",
+      "type": "#8a5a00",
+      "variable": "#0b6b6b",
+      "attr": "#1a5fb4",
+      "meta": "#7a4b00",
+      "builtIn": "#8a3b00"
+    }
   }
 }

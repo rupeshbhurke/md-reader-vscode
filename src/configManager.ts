@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { CustomThemes, resolveCodeTheme, resolveThemeValue, sanitizeThemes } from './themes';
+import { Layouts, resolveLayout } from './layouts';
 
 const THEMES = ['auto', 'light', 'dark', 'sepia'] as const;
 const WIDTHS  = ['narrow', 'medium', 'wide', 'wider', 'ultra', 'full'] as const;
@@ -14,6 +15,8 @@ export type FrontMatterMode = typeof FRONT_MATTER_MODES[number];
 export interface ReaderConfig {
   theme: Theme;
   customThemes: CustomThemes;
+  /** Layout id (typography/spacing), see layouts.ts. */
+  layout: string;
   fontFamily: string;
   fontSize: number;
   lineHeight: number;
@@ -35,7 +38,7 @@ export interface ReaderConfig {
  * palette, never from webview-supplied input.
  */
 export const SETTABLE_KEYS: readonly (keyof ReaderConfig)[] = [
-  'theme', 'fontFamily', 'fontSize', 'lineHeight',
+  'theme', 'layout', 'fontFamily', 'fontSize', 'lineHeight',
   'readingWidth', 'scrollSync', 'blueLightFilter',
 ];
 
@@ -43,6 +46,7 @@ export const SETTABLE_KEYS: readonly (keyof ReaderConfig)[] = [
 const DEFAULTS: ReaderConfig = {
   theme: 'auto',
   customThemes: {},
+  layout: 'standard',
   fontFamily: "Georgia, 'Times New Roman', serif",
   fontSize: 17,
   lineHeight: 1.85,
@@ -60,6 +64,9 @@ export class ConfigManager {
   /** Starter themes loaded from the extension's `themes/` folder at activation (read-only). */
   starters: CustomThemes = {};
 
+  /** Layouts loaded from the extension's `layouts/` folder at activation (read-only). */
+  layouts: Layouts = {};
+
   get(): ReaderConfig {
     const cfg = vscode.workspace.getConfiguration('mdReader');
     const result = {} as ReaderConfig;
@@ -71,6 +78,7 @@ export class ConfigManager {
     result.customThemes = sanitizeThemes(result.customThemes);
     result.theme = resolveThemeValue(result.theme, result.customThemes, this.starters);
     result.codeTheme = resolveCodeTheme(result.codeTheme);
+    result.layout = resolveLayout(result.layout, this.layouts);
     return result;
   }
 

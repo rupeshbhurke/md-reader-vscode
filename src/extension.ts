@@ -3,6 +3,7 @@ import { PanelManager } from './panelManager';
 import { ConfigManager } from './configManager';
 import { ThemeManager } from './themeManager';
 import { loadStarterThemes } from './starterThemes';
+import { loadLayouts } from './layoutLoader';
 import * as path from 'path';
 
 let panelManager: PanelManager;
@@ -10,6 +11,7 @@ let panelManager: PanelManager;
 export function activate(context: vscode.ExtensionContext) {
   const configManager = new ConfigManager();
   configManager.starters = loadStarterThemes(path.join(context.extensionPath, 'themes'));
+  configManager.layouts = loadLayouts(path.join(context.extensionPath, 'layouts'));
   const themeManager = new ThemeManager(configManager);
   panelManager = new PanelManager(context, configManager, themeManager);
   panelManager.setupScrollSync(context);

@@ -30,4 +30,6 @@ module.exports = {
   themes: () => require('../out/test-build/themes.js'),
   starters: () => require('../out/test-build/starterThemes.js'),
   textDecode: () => require('../out/test-build/textDecode.js'),
+  layouts: () => require('../out/test-build/layouts.js'),
+  layoutLoader: () => require('../out/test-build/layoutLoader.js'),
 };

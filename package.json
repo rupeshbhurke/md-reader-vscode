@@ -2,7 +2,7 @@
   "name": "md-reader",
   "displayName": "MD Reader",
   "description": "A reading-focused, fully customizable Markdown viewer with independent multi-document support.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publisher": "rupeshbhurke",
   "author": {
     "name": "Rupesh H Bhurke",
@@ -355,8 +355,178 @@
                     "type": "string",
                     "format": "color",
                     "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "surfaces": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Grouped colours (the theme-file shape). Equivalent to the flat keys; both are accepted.",
+                    "properties": {
+                      "page": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "alt": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "panel": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "quote": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "stripe": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      }
+                    }
+                  },
+                  "lines": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Grouped colours (the theme-file shape). Equivalent to the flat keys; both are accepted.",
+                    "properties": {
+                      "border": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      }
+                    }
+                  },
+                  "ink": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Grouped colours (the theme-file shape). Equivalent to the flat keys; both are accepted.",
+                    "properties": {
+                      "primary": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "muted": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      }
+                    }
+                  },
+                  "emphasis": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Grouped colours (the theme-file shape). Equivalent to the flat keys; both are accepted.",
+                    "properties": {
+                      "link": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "selection": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      }
+                    }
+                  },
+                  "code": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Grouped colours (the theme-file shape). Equivalent to the flat keys; both are accepted.",
+                    "properties": {
+                      "inlineBackground": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "inlineText": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "blockBackground": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "blockText": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      }
+                    }
+                  },
+                  "syntax": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Grouped colours (the theme-file shape). Equivalent to the flat keys; both are accepted.",
+                    "properties": {
+                      "keyword": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "string": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "comment": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "number": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "title": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "type": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "variable": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "attr": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "meta": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      },
+                      "builtIn": {
+                        "type": "string",
+                        "format": "color",
+                        "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                      }
+                    }
                   }
                 }
+              },
+              "version": {
+                "type": "string",
+                "maxLength": 20
+              },
+              "category": {
+                "type": "string",
+                "maxLength": 24
               }
             }
           }
@@ -400,6 +570,27 @@
             "Full window width (100%) — no side margins"
           ],
           "description": "Width of the reading column."
+        },
+        "mdReader.layout": {
+          "type": "string",
+          "default": "standard",
+          "enum": [
+            "standard",
+            "compact",
+            "book",
+            "editorial",
+            "magazine",
+            "academic"
+          ],
+          "enumDescriptions": [
+            "Standard — the default look",
+            "Compact — tighter headings and paragraphs",
+            "Book — serif headings, indented paragraphs, no rules",
+            "Editorial — strong hierarchy with a heavy rule under the title",
+            "Magazine — large bold sans-serif headings",
+            "Academic — serif headings, restrained scale, no rules"
+          ],
+          "description": "Typography of headings and paragraphs (font, scale, spacing, rules), independent of the colour theme. Body font, size, line height and width stay your own settings. Layouts are files in the extension's layouts/ folder."
         },
         "mdReader.codeTheme": {
           "type": "string",

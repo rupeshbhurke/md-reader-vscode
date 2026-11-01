@@ -64,6 +64,10 @@ export interface CustomTheme {
   colors: Record<string, string>;
   /** Optional credit, kept through export/import. */
   author?: string;
+  /** Optional revision of the theme itself (e.g. "1.1.0"), so a shipped theme can be improved over time. */
+  version?: string;
+  /** Optional dropdown group (e.g. "Light", "Dark"); only used for starter themes. */
+  category?: string;
 }
 export type CustomThemes = Record<string, CustomTheme>;
 
@@ -72,6 +76,58 @@ export const STARTER_PREFIX = 'starter:';
 export const MAX_THEMES = 50;
 export const MAX_LABEL = 40;
 export const MAX_AUTHOR = 60;
+const VERSION_RE = /^[0-9A-Za-z][0-9A-Za-z.+-]{0,19}$/;
+const CATEGORY_RE = /^[\w &-]{1,24}$/;
+
+/**
+ * Grouped colour names, used in theme *files* (export / starter themes) because
+ * they read better than a flat list: `colors.ink.primary`, `colors.code.blockBackground`.
+ * In memory, in settings and on the wire themes always use the flat token keys
+ * (`text`, `preBg`, ...), so saved themes and older extension versions are unaffected.
+ * Both shapes are accepted everywhere a theme is read.
+ * Every flat token appears exactly once here (a test enforces it).
+ */
+export const COLOR_GROUPS: Record<string, Record<string, string>> = {
+  surfaces: { page: 'bg', alt: 'bgAlt', panel: 'surface', quote: 'quoteBg', stripe: 'tableStripe' },
+  lines: { border: 'border' },
+  ink: { primary: 'text', muted: 'textMuted' },
+  emphasis: { link: 'accent', selection: 'selection' },
+  code: { inlineBackground: 'codeBg', inlineText: 'codeText', blockBackground: 'preBg', blockText: 'preText' },
+  syntax: {
+    keyword: 'hlKeyword', string: 'hlString', comment: 'hlComment', number: 'hlNumber', title: 'hlTitle',
+    type: 'hlType', variable: 'hlVariable', attr: 'hlAttr', meta: 'hlMeta', builtIn: 'hlBuiltIn',
+  },
+};
+
+/** Accepts flat keys, grouped colours, or a mix (flat wins on a clash) and returns flat, untrusted values. */
+export function flattenColors(raw: unknown): Record<string, unknown> {
+  const flat: Record<string, unknown> = {};
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) { return flat; }
+  const entries = Object.entries(raw as Record<string, unknown>);
+  for (const [group, value] of entries) {
+    const names = COLOR_GROUPS[group];
+    if (names && value && typeof value === 'object' && !Array.isArray(value)) {
+      for (const [name, color] of Object.entries(value as Record<string, unknown>)) {
+        if (names[name]) { flat[names[name]] = color; }
+      }
+    }
+  }
+  for (const [key, value] of entries) {
+    if (typeof value === 'string' && TOKEN_KEYS.has(key)) { flat[key] = value; }
+  }
+  return flat;
+}
+
+/** Flat colours -> the grouped shape written to theme files. Group and name order is stable. */
+export function groupColors(flat: Record<string, string>): Record<string, Record<string, string>> {
+  const grouped: Record<string, Record<string, string>> = {};
+  for (const [group, names] of Object.entries(COLOR_GROUPS)) {
+    for (const [name, key] of Object.entries(names)) {
+      if (flat[key] !== undefined) { (grouped[group] ??= {})[name] = flat[key]; }
+    }
+  }
+  return grouped;
+}
 const ID_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
 
 // Hex or rgb()/hsl() with only digits, separators and units. Deliberately
@@ -109,13 +165,15 @@ export function sanitizeTheme(raw: unknown, fallbackLabel = 'Theme'): CustomThem
   const label = (typeof r.label === 'string' ? r.label.trim() : '').slice(0, MAX_LABEL) || fallbackLabel;
   const base = (THEME_BASES as readonly unknown[]).includes(r.base) ? (r.base as ThemeBase) : 'light';
   const colors: Record<string, string> = {};
-  if (r.colors && typeof r.colors === 'object') {
-    for (const [k, v] of Object.entries(r.colors as Record<string, unknown>)) {
-      if (TOKEN_KEYS.has(k) && isValidColor(v)) { colors[k] = v; }
-    }
+  for (const [k, v] of Object.entries(flattenColors(r.colors))) {
+    if (TOKEN_KEYS.has(k) && isValidColor(v)) { colors[k] = v; }
   }
+  const theme: CustomTheme = { label, base, colors };
   const author = typeof r.author === 'string' ? r.author.trim().slice(0, MAX_AUTHOR) : '';
-  return author ? { label, base, colors, author } : { label, base, colors };
+  if (author) { theme.author = author; }
+  if (typeof r.version === 'string' && VERSION_RE.test(r.version.trim())) { theme.version = r.version.trim(); }
+  if (typeof r.category === 'string' && CATEGORY_RE.test(r.category.trim())) { theme.category = r.category.trim(); }
+  return theme;
 }
 
 /** Sanitises a stored map; invalid entries are dropped, never thrown on. */
@@ -204,12 +262,14 @@ export function codeThemeFor(codeTheme: string, theme: string, custom: CustomThe
 
 // ── Export / import file format ───────────────────────────────────────────────
 
-export const FILE_FORMAT_VERSION = 1;
+/** 2 = grouped colours, `version`, `category`. Version-1 files (flat colours) are still read. */
+export const FILE_FORMAT_VERSION = 2;
 
 export interface ThemeFileEntry extends CustomTheme { id: string; }
 
 export function buildThemeFile(entries: ThemeFileEntry[]): string {
-  return JSON.stringify({ mdReaderTheme: FILE_FORMAT_VERSION, themes: entries }, null, 2) + '\n';
+  const themes = entries.map(e => ({ ...e, colors: groupColors(e.colors) }));
+  return JSON.stringify({ mdReaderTheme: FILE_FORMAT_VERSION, themes }, null, 2) + '\n';
 }
 
 /**

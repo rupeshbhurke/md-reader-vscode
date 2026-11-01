@@ -1,0 +1,30 @@
+{
+  "mdReaderLayout": 1,
+  "id": "academic",
+  "label": "Academic",
+  "author": "MD Reader starter pack",
+  "version": "1.0.0",
+  "headings": {
+    "font": "'Times New Roman', Times, serif",
+    "weight": 700,
+    "lineHeight": 1.25,
+    "spaceBefore": 1.8,
+    "spaceAfter": 0.5,
+    "scale": {
+      "h1": 1.8,
+      "h2": 1.4,
+      "h3": 1.2,
+      "h4": 1.05,
+      "h5": 1,
+      "h6": 0.95
+    },
+    "rules": {
+      "h1": 0,
+      "h2": 0
+    }
+  },
+  "paragraphs": {
+    "space": 0.9,
+    "indent": 0
+  }
+}

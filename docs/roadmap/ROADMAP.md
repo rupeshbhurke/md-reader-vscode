@@ -1,13 +1,13 @@
 # MD Reader roadmap
 
-Last updated: 2026-11-02 (Phases 1–2 released; Phase 3 merged; Phase 4 implemented, awaiting a real-editor test and release). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
+Last updated: 2026-11-02 (Phases 1–4 released; Phase 5 implemented, awaiting a real-editor test and release). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
 
 ## Status
 
 | | |
 |---|---|
-| Latest release | `v0.3.1` (Phase 3 and the `showTOC` removal are merged and ship with `0.4.0`) |
-| In flight | `feat/open-without-editor` — Phase 4, version `0.4.0`: open without an editor. Implemented and unit-tested where possible; the editor behaviour has not yet been tried in a real editor |
+| Latest release | `v0.4.0` (Phase 4; also carries Phase 3 and the `showTOC` removal) |
+| In flight | `feat/theme-system-v2` — Phase 5, version `0.5.0`: layouts, grouped theme files, version/category, dropdown categories. Implemented, 77 tests, checked in a browser harness; not yet tried in a real editor |
 | Known issues | none open. The dead `mdReader.showTOC` setting found by the Phase 3 tests has been removed (the TOC always works) |
 | Not in place | verified Marketplace publisher and the `VSCE_PAT` / `OVSX_PAT` secrets (maintainer — see `docs/RELEASING.md`) |
 | Unresolved | F5 debugging crashed the extension host in Windsurf. It looked like a host problem, not this repo's code |
@@ -51,7 +51,7 @@ No new code.
 
 *Ordering note:* doing Phase 3 before Phase 2 would have the format change arrive already guarded by tests. The current order fixes the visible defect sooner.
 
-## Phase 4 — 0.4.0: open without an editor — IMPLEMENTED, awaiting release
+## Phase 4 — 0.4.0: open without an editor — DONE (v0.4.0)
 
 - 4.1 Done: accept the URI from an Explorer right-click and load the document with `openTextDocument(uri)`, without opening a tab.
 - 4.2 Done: stop disposing the panel when the source editor closes (the `onDidCloseTextDocument` handler).
@@ -59,15 +59,15 @@ No new code.
 - Also done: Command Palette falls back to a file picker; multi-select in the Explorer opens several; task toggling saves when no editor has the file open; UTF-8 BOM and UTF-16 handled.
 - Done: `CLAUDE.md` architecture notes updated, and a test guards that closing an editor does not close the reader.
 
-## Phase 5 — 0.5.0: theme system v2
+## Phase 5 — 0.5.0: theme system v2 — IMPLEMENTED, awaiting release
 
-- 5.1 Typography as a theme axis: heading sizes and spacing, paragraph spacing, reading width.
-- 5.2 Composable themes: a theme references a colour scheme and a layout by name.
-- 5.3 Grouped tokens (`text.primary` rather than a flat list), still reading the old format.
-- 5.4 A `version` field on themes, so shipped starters can be improved without overwriting user copies.
-- 5.5 Categories in the dropdown once there are more than about 30 themes.
+- 5.1 Done as **layouts**, a second axis: heading font/weight/scale/spacing/rules, paragraph spacing and indent (6 ship). *Interpretation:* body font, size, line height and reading width are NOT part of a layout — they are the user's accessibility preferences and a layout must not override them.
+- 5.2 Done as **independent axes**: any colour theme with any layout (20 themes × 6 layouts from 26 small files). *Interpretation:* composition is the user's choice of two settings, not a theme file that references other files.
+- 5.3 Done: theme files use grouped colours (`ink.primary`, `code.blockBackground`, …), file format v2. Flat colours are still read everywhere and remain the in-memory/settings shape, so saved themes and older versions are unaffected.
+- 5.4 Done (groundwork): `version` on themes and layouts, kept through export/import. *Not yet used for anything automatic* — e.g. offering to update an unmodified copy when a starter improves is deferred (below).
+- 5.5 Done: starter themes are grouped by `category` (Light / Dark / Accessible) in the dropdown.
 
-5.2 and 5.3 change the file format and ship together, with the 0.3.x format still readable.
+Not done, deliberately (candidates for later): user-created layouts and a layout editor; a theme that recommends a layout; a "reading style" preset pairing a theme with a layout; using `version` to offer updates to unmodified copies of starters.
 
 ## Phase 6 — 0.6.0 and later
 

@@ -1,0 +1,29 @@
+{
+  "mdReaderLayout": 1,
+  "id": "standard",
+  "label": "Standard",
+  "author": "MD Reader starter pack",
+  "version": "1.0.0",
+  "headings": {
+    "weight": 600,
+    "lineHeight": 1.3,
+    "spaceBefore": 2.4,
+    "spaceAfter": 0.6,
+    "scale": {
+      "h1": 2,
+      "h2": 1.5,
+      "h3": 1.25,
+      "h4": 1.1,
+      "h5": 1,
+      "h6": 0.9
+    },
+    "rules": {
+      "h1": 2,
+      "h2": 1
+    }
+  },
+  "paragraphs": {
+    "space": 1.1,
+    "indent": 0
+  }
+}

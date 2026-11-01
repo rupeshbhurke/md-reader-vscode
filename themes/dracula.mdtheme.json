@@ -1,33 +1,47 @@
 {
-  "mdReaderTheme": 1,
+  "mdReaderTheme": 2,
   "id": "dracula",
   "label": "Dracula",
   "base": "dark",
+  "category": "Dark",
   "author": "MD Reader starter pack",
+  "version": "1.0.0",
   "colors": {
-    "bg": "#282a36",
-    "bgAlt": "#343746",
-    "surface": "#2d303e",
-    "border": "#44475a",
-    "text": "#f8f8f2",
-    "textMuted": "#9aa5ce",
-    "accent": "#bd93f9",
-    "selection": "#44475a",
-    "codeBg": "#343746",
-    "codeText": "#ff79c6",
-    "preBg": "#1e1f29",
-    "preText": "#f8f8f2",
-    "quoteBg": "#2f3240",
-    "tableStripe": "#2e303c",
-    "hlKeyword": "#ff79c6",
-    "hlString": "#f1fa8c",
-    "hlComment": "#8b97c7",
-    "hlNumber": "#bd93f9",
-    "hlTitle": "#50fa7b",
-    "hlType": "#8be9fd",
-    "hlVariable": "#ffb86c",
-    "hlAttr": "#50fa7b",
-    "hlMeta": "#ff79c6",
-    "hlBuiltIn": "#8be9fd"
+    "surfaces": {
+      "page": "#282a36",
+      "alt": "#343746",
+      "panel": "#2d303e",
+      "quote": "#2f3240",
+      "stripe": "#2e303c"
+    },
+    "lines": {
+      "border": "#44475a"
+    },
+    "ink": {
+      "primary": "#f8f8f2",
+      "muted": "#9aa5ce"
+    },
+    "emphasis": {
+      "link": "#bd93f9",
+      "selection": "#44475a"
+    },
+    "code": {
+      "inlineBackground": "#343746",
+      "inlineText": "#ff79c6",
+      "blockBackground": "#1e1f29",
+      "blockText": "#f8f8f2"
+    },
+    "syntax": {
+      "keyword": "#ff79c6",
+      "string": "#f1fa8c",
+      "comment": "#8b97c7",
+      "number": "#bd93f9",
+      "title": "#50fa7b",
+      "type": "#8be9fd",
+      "variable": "#ffb86c",
+      "attr": "#50fa7b",
+      "meta": "#ff79c6",
+      "builtIn": "#8be9fd"
+    }
   }
 }

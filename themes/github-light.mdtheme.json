@@ -1,33 +1,47 @@
 {
-  "mdReaderTheme": 1,
+  "mdReaderTheme": 2,
   "id": "github-light",
   "label": "GitHub Light",
   "base": "light",
+  "category": "Light",
   "author": "MD Reader starter pack",
+  "version": "1.0.0",
   "colors": {
-    "bg": "#ffffff",
-    "bgAlt": "#f6f8fa",
-    "surface": "#ffffff",
-    "border": "#d0d7de",
-    "text": "#1f2328",
-    "textMuted": "#59636e",
-    "accent": "#0969da",
-    "selection": "#b6e3ff",
-    "codeBg": "#eaeef2",
-    "codeText": "#cf222e",
-    "preBg": "#f6f8fa",
-    "preText": "#1f2328",
-    "quoteBg": "#f3f6fa",
-    "tableStripe": "#f6f8fa",
-    "hlKeyword": "#cf222e",
-    "hlString": "#0a3069",
-    "hlComment": "#59636e",
-    "hlNumber": "#0550ae",
-    "hlTitle": "#8250df",
-    "hlType": "#953800",
-    "hlVariable": "#0550ae",
-    "hlAttr": "#0550ae",
-    "hlMeta": "#0550ae",
-    "hlBuiltIn": "#953800"
+    "surfaces": {
+      "page": "#ffffff",
+      "alt": "#f6f8fa",
+      "panel": "#ffffff",
+      "quote": "#f3f6fa",
+      "stripe": "#f6f8fa"
+    },
+    "lines": {
+      "border": "#d0d7de"
+    },
+    "ink": {
+      "primary": "#1f2328",
+      "muted": "#59636e"
+    },
+    "emphasis": {
+      "link": "#0969da",
+      "selection": "#b6e3ff"
+    },
+    "code": {
+      "inlineBackground": "#eaeef2",
+      "inlineText": "#cf222e",
+      "blockBackground": "#f6f8fa",
+      "blockText": "#1f2328"
+    },
+    "syntax": {
+      "keyword": "#cf222e",
+      "string": "#0a3069",
+      "comment": "#59636e",
+      "number": "#0550ae",
+      "title": "#8250df",
+      "type": "#953800",
+      "variable": "#0550ae",
+      "attr": "#0550ae",
+      "meta": "#0550ae",
+      "builtIn": "#953800"
+    }
   }
 }
