@@ -10,3 +10,5 @@ windows-app/**
 scripts/**
 CLAUDE.md
 .github/**
+*.vsix
+out/test/**
