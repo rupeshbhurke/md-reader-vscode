@@ -1,33 +1,47 @@
 {
-  "mdReaderTheme": 1,
+  "mdReaderTheme": 2,
   "id": "catppuccin-latte",
   "label": "Catppuccin Latte",
   "base": "light",
+  "category": "Light",
   "author": "MD Reader starter pack",
+  "version": "1.0.0",
   "colors": {
-    "bg": "#eff1f5",
-    "bgAlt": "#e6e9ef",
-    "surface": "#f5f6f9",
-    "border": "#ccd0da",
-    "text": "#4c4f69",
-    "textMuted": "#5c5f77",
-    "accent": "#1a56d0",
-    "selection": "#ccd0da",
-    "codeBg": "#e6e9ef",
-    "codeText": "#c00d32",
-    "preBg": "#e6e9ef",
-    "preText": "#3f4259",
-    "quoteBg": "#e9ecf2",
-    "tableStripe": "#eaedf2",
-    "hlKeyword": "#7a2ad8",
-    "hlString": "#276b19",
-    "hlComment": "#6c6f85",
-    "hlNumber": "#9c4607",
-    "hlTitle": "#1a56d0",
-    "hlType": "#7d4e00",
-    "hlVariable": "#c00d32",
-    "hlAttr": "#0b6b76",
-    "hlMeta": "#8a45c9",
-    "hlBuiltIn": "#963f06"
+    "surfaces": {
+      "page": "#eff1f5",
+      "alt": "#e6e9ef",
+      "panel": "#f5f6f9",
+      "quote": "#e9ecf2",
+      "stripe": "#eaedf2"
+    },
+    "lines": {
+      "border": "#ccd0da"
+    },
+    "ink": {
+      "primary": "#4c4f69",
+      "muted": "#5c5f77"
+    },
+    "emphasis": {
+      "link": "#1a56d0",
+      "selection": "#ccd0da"
+    },
+    "code": {
+      "inlineBackground": "#e6e9ef",
+      "inlineText": "#c00d32",
+      "blockBackground": "#e6e9ef",
+      "blockText": "#3f4259"
+    },
+    "syntax": {
+      "keyword": "#7a2ad8",
+      "string": "#276b19",
+      "comment": "#6c6f85",
+      "number": "#9c4607",
+      "title": "#1a56d0",
+      "type": "#7d4e00",
+      "variable": "#c00d32",
+      "attr": "#0b6b76",
+      "meta": "#8a45c9",
+      "builtIn": "#963f06"
+    }
   }
 }

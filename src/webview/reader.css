@@ -42,6 +42,24 @@
   --line-height:  var(--reader-line-height, 1.85);
   --max-width:    var(--reader-max-width, 760px);
 
+  /* Layout (typography / spacing). The selected layout overrides these on <html>;
+     layouts/standard.mdlayout.json mirrors them exactly (a test enforces it). */
+  --h-font:         var(--font-ui);
+  --h-weight:       600;
+  --h-line:         1.3;
+  --h-space-before: 2.4em;
+  --h-space-after:  0.6em;
+  --h1-size:        2em;
+  --h2-size:        1.5em;
+  --h3-size:        1.25em;
+  --h4-size:        1.1em;
+  --h5-size:        1em;
+  --h6-size:        0.9em;
+  --h1-rule:        2px;
+  --h2-rule:        1px;
+  --p-space:        1.1em;
+  --p-indent:       0em;
+
   /* Transitions */
   --transition:   0.2s ease;
 }
@@ -238,21 +256,21 @@ body.blue-light-filter::after {
 #reader-content h4,
 #reader-content h5,
 #reader-content h6 {
-  font-family: var(--font-ui);
-  font-weight: 600;
-  line-height: 1.3;
+  font-family: var(--h-font);
+  font-weight: var(--h-weight);
+  line-height: var(--h-line);
   color: var(--text);
-  margin-top: 2.4em;
-  margin-bottom: 0.6em;
+  margin-top: var(--h-space-before);
+  margin-bottom: var(--h-space-after);
   scroll-margin-top: var(--font-size);
 }
 
-#reader-content h1 { font-size: 2em;   border-bottom: 2px solid var(--border); padding-bottom: 0.3em; }
-#reader-content h2 { font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 0.25em; }
-#reader-content h3 { font-size: 1.25em; }
-#reader-content h4 { font-size: 1.1em; }
-#reader-content h5 { font-size: 1em; }
-#reader-content h6 { font-size: 0.9em; color: var(--text-muted); }
+#reader-content h1 { font-size: var(--h1-size); border-bottom: var(--h1-rule) solid var(--border); padding-bottom: 0.3em; }
+#reader-content h2 { font-size: var(--h2-size); border-bottom: var(--h2-rule) solid var(--border); padding-bottom: 0.25em; }
+#reader-content h3 { font-size: var(--h3-size); }
+#reader-content h4 { font-size: var(--h4-size); }
+#reader-content h5 { font-size: var(--h5-size); }
+#reader-content h6 { font-size: var(--h6-size); color: var(--text-muted); }
 
 /* Anchor links on headings */
 #reader-content h1 > a,
@@ -282,7 +300,8 @@ h3:hover > .heading-anchor,
 }
 
 #reader-content p {
-  margin: 1.1em 0;
+  margin: var(--p-space) 0;
+  text-indent: var(--p-indent);
 }
 
 #reader-content a {

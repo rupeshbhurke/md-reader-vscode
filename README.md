@@ -94,11 +94,11 @@ Besides Auto, Light, Dark and Sepia you can create your own colour themes.
 
 ### Starter themes
 
-MD Reader ships 20 ready-made themes under **Starter themes** in the Theme dropdown: Solarized Light/Dark, Nord, Dracula, Gruvbox Light/Dark, One Dark, Monokai, Tokyo Night, Catppuccin Latte/Mocha, Rosé Pine and Dawn, GitHub Light/Dark, Ayu Light, Night Owl, Paper, Forest and High Contrast. Text, link, code and syntax colours in every one meet WCAG AA contrast, and body text meets AAA. Each carries its own matching syntax colours, and the light ones have light code blocks.
+MD Reader ships 20 ready-made themes, grouped by category (**Starter — Light**, **Starter — Dark**, **Starter — Accessible**) in the Theme dropdown: Solarized Light/Dark, Nord, Dracula, Gruvbox Light/Dark, One Dark, Monokai, Tokyo Night, Catppuccin Latte/Mocha, Rosé Pine and Dawn, GitHub Light/Dark, Ayu Light, Night Owl, Paper, Forest and High Contrast. Text, link, code and syntax colours in every one meet WCAG AA contrast, and body text meets AAA. Each carries its own matching syntax colours, and the light ones have light code blocks.
 
 Starter themes are plain theme files in the extension's [`themes/`](themes) folder, in exactly the same format Export writes and Import reads. They are read-only: pick one and press **Save as new** to get your own editable copy, or press **Add starter themes** (or run **MD Reader: Add Starter Themes to My Themes…**) to copy them all into **My themes**.
 
-**Contribute a theme:** export one of your own, or write a `*.mdtheme.json` file (see any file in `themes/` for the format), and open a pull request adding it to `themes/`. Set `"author"` to credit yourself.
+**Contribute a theme:** export one of your own, or write a `*.mdtheme.json` file (the format is documented in [docs/THEME-FORMAT.md](docs/THEME-FORMAT.md)), and open a pull request adding it to `themes/`. Set `"author"` to credit yourself.
 
 The palettes are adapted from, and inspired by, these open-source colour schemes: [Solarized](https://ethanschoonover.com/solarized/) (Ethan Schoonover), [Nord](https://www.nordtheme.com/) (Arctic Ice Studio), [Dracula](https://draculatheme.com/) (Zeno Rocha), [Gruvbox](https://github.com/morhetz/gruvbox) (Pavel Pertsev), [One Dark](https://github.com/atom/one-dark-syntax) (Atom), Monokai (Wimer Hazenberg), [Tokyo Night](https://github.com/enkia/tokyo-night-vscode-theme) (enkia), [Catppuccin](https://catppuccin.com/), [Rosé Pine](https://rosepinetheme.com/), GitHub's Primer colours, [Ayu](https://github.com/ayu-theme/ayu-colors) and [Night Owl](https://github.com/sdras/night-owl-vscode-theme) (Sarah Drasner). Paper, Forest and High Contrast are original. The colour values here are adaptations tuned for reading, not exact copies.
 
@@ -109,6 +109,21 @@ Custom themes are saved in your VS Code **user settings** (`mdReader.customTheme
 - **Updating the extension keeps your themes.** This holds for Marketplace updates and for installing a newer `.vsix` over the old one.
 - **Uninstalling leaves your themes in your settings**, so they are back if you reinstall. To remove them, run **MD Reader: Delete All Custom Themes…** *before* uninstalling (it offers to export a backup first), or delete the `mdReader.customThemes` entry from your settings.
 - Themes follow your VS Code settings: they sync if you use Settings Sync, but are per-profile, and VS Code, VS Code Insiders and other editors each keep their own copy. Export your themes if you need the same ones elsewhere.
+
+## Layouts
+
+A **layout** controls the typography of headings and paragraphs — heading font, weight, size scale, spacing, the rule under titles, paragraph spacing and first-line indent — and is **independent of the colour theme**: any theme works with any layout. Choose one with **Layout** in the settings drawer (or `mdReader.layout`).
+
+| Layout | Look |
+|---|---|
+| Standard | The default look |
+| Compact | Tighter headings and paragraphs |
+| Book | Serif headings, indented paragraphs, no rules |
+| Editorial | Strong hierarchy with a heavy rule under the title |
+| Magazine | Large, bold sans-serif headings |
+| Academic | Serif headings, restrained scale, no rules |
+
+Your body font, font size, line height and reading width stay your own settings in the drawer — a layout never overrides them. Layouts are plain files in the extension's [`layouts/`](layouts) folder; to contribute one, see [docs/THEME-FORMAT.md](docs/THEME-FORMAT.md).
 
 ## Font Families
 
@@ -192,6 +207,7 @@ All settings are under `mdReader.*` in VS Code Settings (`Ctrl+,`):
 |---|---|---|
 | `mdReader.theme` | `auto` | Color theme: `auto` / `light` / `dark` / `sepia`, or `custom:<id>` for one of your own, or `starter:<id>` for a bundled starter theme |
 | `mdReader.customThemes` | `{}` | Your saved custom themes (normally edited from the settings drawer; see [Custom Themes](#custom-themes)) |
+| `mdReader.layout` | `standard` | Typography of headings and paragraphs: `standard` / `compact` / `book` / `editorial` / `magazine` / `academic`. See [Layouts](#layouts) |
 | `mdReader.fontFamily` | `Georgia, 'Times New Roman', serif` | Body font family |
 | `mdReader.fontSize` | `17` | Base font size in px (10–72) |
 | `mdReader.lineHeight` | `1.85` | Line spacing multiplier |

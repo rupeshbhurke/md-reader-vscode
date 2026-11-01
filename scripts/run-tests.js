@@ -22,6 +22,8 @@ esbuild.buildSync({
     path.join(root, 'src', 'themes.ts'),
     path.join(root, 'src', 'starterThemes.ts'),
     path.join(root, 'src', 'textDecode.ts'),
+    path.join(root, 'src', 'layouts.ts'),
+    path.join(root, 'src', 'layoutLoader.ts'),
   ],
   bundle: true,
   platform: 'node',

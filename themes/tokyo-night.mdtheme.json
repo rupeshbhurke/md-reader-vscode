@@ -1,33 +1,47 @@
 {
-  "mdReaderTheme": 1,
+  "mdReaderTheme": 2,
   "id": "tokyo-night",
   "label": "Tokyo Night",
   "base": "dark",
+  "category": "Dark",
   "author": "MD Reader starter pack",
+  "version": "1.0.0",
   "colors": {
-    "bg": "#1a1b26",
-    "bgAlt": "#1f2335",
-    "surface": "#1e2030",
-    "border": "#2f334d",
-    "text": "#c0caf5",
-    "textMuted": "#9aa5ce",
-    "accent": "#7aa2f7",
-    "selection": "#33467c",
-    "codeBg": "#24283b",
-    "codeText": "#ff9e64",
-    "preBg": "#16161e",
-    "preText": "#c0caf5",
-    "quoteBg": "#1f2335",
-    "tableStripe": "#1c1e2d",
-    "hlKeyword": "#bb9af7",
-    "hlString": "#9ece6a",
-    "hlComment": "#7d86b3",
-    "hlNumber": "#ff9e64",
-    "hlTitle": "#7aa2f7",
-    "hlType": "#2ac3de",
-    "hlVariable": "#f7768e",
-    "hlAttr": "#73daca",
-    "hlMeta": "#7dcfff",
-    "hlBuiltIn": "#e0af68"
+    "surfaces": {
+      "page": "#1a1b26",
+      "alt": "#1f2335",
+      "panel": "#1e2030",
+      "quote": "#1f2335",
+      "stripe": "#1c1e2d"
+    },
+    "lines": {
+      "border": "#2f334d"
+    },
+    "ink": {
+      "primary": "#c0caf5",
+      "muted": "#9aa5ce"
+    },
+    "emphasis": {
+      "link": "#7aa2f7",
+      "selection": "#33467c"
+    },
+    "code": {
+      "inlineBackground": "#24283b",
+      "inlineText": "#ff9e64",
+      "blockBackground": "#16161e",
+      "blockText": "#c0caf5"
+    },
+    "syntax": {
+      "keyword": "#bb9af7",
+      "string": "#9ece6a",
+      "comment": "#7d86b3",
+      "number": "#ff9e64",
+      "title": "#7aa2f7",
+      "type": "#2ac3de",
+      "variable": "#f7768e",
+      "attr": "#73daca",
+      "meta": "#7dcfff",
+      "builtIn": "#e0af68"
+    }
   }
 }

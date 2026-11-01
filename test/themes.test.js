@@ -130,8 +130,15 @@ test('parseThemeFile sanitises hostile themes', () => {
 test('THEME_TOKENS match the mdReader.customThemes schema in package.json', () => {
   const pkg = JSON.parse(readText('package.json'));
   const schema = pkg.contributes.configuration.properties['mdReader.customThemes'];
-  const schemaKeys = Object.keys(schema.additionalProperties.properties.colors.properties).sort();
-  assert.deepEqual(schemaKeys, t.THEME_TOKENS.map(x => x.key).sort());
+  const colorProps = schema.additionalProperties.properties.colors.properties;
+  const flat = Object.keys(colorProps).filter(k => colorProps[k].type === 'string').sort();
+  assert.deepEqual(flat, t.THEME_TOKENS.map(x => x.key).sort());
+  // ...and the grouped shape used in theme files is described too.
+  const groups = Object.keys(colorProps).filter(k => colorProps[k].type === 'object').sort();
+  assert.deepEqual(groups, Object.keys(t.COLOR_GROUPS).sort());
+  for (const g of groups) {
+    assert.deepEqual(Object.keys(colorProps[g].properties).sort(), Object.keys(t.COLOR_GROUPS[g]).sort(), `schema for group ${g}`);
+  }
 });
 
 test('every theme token has distinct CSS variables that reader.css actually defines', () => {

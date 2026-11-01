@@ -6,6 +6,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.5.0] — 2026-11-02
+
+### Added
+- **Layouts**: a second axis next to the colour theme. A layout sets heading font, weight, size scale, spacing and rules, plus paragraph spacing and first-line indent. Six ship: Standard, Compact, Book, Editorial, Magazine and Academic. Pick one in the settings drawer (**Layout**) or with `mdReader.layout`; any theme works with any layout. Body font, size, line height and width stay your own settings. HTML export carries the layout.
+- Layouts are plain files in `layouts/*.mdlayout.json`, validated like themes (see `docs/THEME-FORMAT.md`).
+- Starter themes are grouped in the dropdown by category (Light / Dark / Accessible).
+- Themes can carry a `version` and a `category`; both survive export and import.
+- `docs/THEME-FORMAT.md` documents the theme and layout file formats.
+
+### Changed
+- Theme files (export and starter themes) are now written in a **grouped** shape: `colors.ink.primary` instead of a flat `text`, `colors.code.blockBackground` instead of `preBg`. The file format version is now `2`. Version-1 files and themes already saved in your settings (flat keys) keep working unchanged, and both shapes are accepted everywhere. A theme exported from this version cannot be read by an older release, which will say it was made by a newer version.
+
+---
+
 ## [0.4.0] — 2026-11-02
 
 ### Added

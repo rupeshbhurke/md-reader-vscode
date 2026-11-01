@@ -1,33 +1,47 @@
 {
-  "mdReaderTheme": 1,
+  "mdReaderTheme": 2,
   "id": "high-contrast",
   "label": "High Contrast",
   "base": "dark",
+  "category": "Accessible",
   "author": "MD Reader starter pack",
+  "version": "1.0.0",
   "colors": {
-    "bg": "#000000",
-    "bgAlt": "#0a0a0a",
-    "surface": "#000000",
-    "border": "#ffffff",
-    "text": "#ffffff",
-    "textMuted": "#e0e0e0",
-    "accent": "#ffd400",
-    "selection": "#1a4a8a",
-    "codeBg": "#1a1a1a",
-    "codeText": "#ffb86c",
-    "preBg": "#000000",
-    "preText": "#ffffff",
-    "quoteBg": "#0f0f0f",
-    "tableStripe": "#141414",
-    "hlKeyword": "#ff6b6b",
-    "hlString": "#a5ffb0",
-    "hlComment": "#bdbdbd",
-    "hlNumber": "#7ad7ff",
-    "hlTitle": "#ffd400",
-    "hlType": "#ffa657",
-    "hlVariable": "#ff9bd5",
-    "hlAttr": "#7ad7ff",
-    "hlMeta": "#c9a7ff",
-    "hlBuiltIn": "#ffa657"
+    "surfaces": {
+      "page": "#000000",
+      "alt": "#0a0a0a",
+      "panel": "#000000",
+      "quote": "#0f0f0f",
+      "stripe": "#141414"
+    },
+    "lines": {
+      "border": "#ffffff"
+    },
+    "ink": {
+      "primary": "#ffffff",
+      "muted": "#e0e0e0"
+    },
+    "emphasis": {
+      "link": "#ffd400",
+      "selection": "#1a4a8a"
+    },
+    "code": {
+      "inlineBackground": "#1a1a1a",
+      "inlineText": "#ffb86c",
+      "blockBackground": "#000000",
+      "blockText": "#ffffff"
+    },
+    "syntax": {
+      "keyword": "#ff6b6b",
+      "string": "#a5ffb0",
+      "comment": "#bdbdbd",
+      "number": "#7ad7ff",
+      "title": "#ffd400",
+      "type": "#ffa657",
+      "variable": "#ff9bd5",
+      "attr": "#7ad7ff",
+      "meta": "#c9a7ff",
+      "builtIn": "#ffa657"
+    }
   }
 }

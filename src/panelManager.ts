@@ -5,6 +5,7 @@ import { ConfigManager, ReaderConfig, SETTABLE_KEYS } from './configManager';
 import { renderMarkdown } from './markdownRenderer';
 import { ThemeManager } from './themeManager';
 import { decodeText } from './textDecode';
+import { layoutCss, layoutsForWebview } from './layouts';
 import { THEME_TOKENS, codeThemeFor, effectiveBase, themeCss } from './themes';
 
 export class PanelManager {
@@ -298,6 +299,7 @@ export class PanelManager {
 <style>${readerCss}</style>
 <style>${katexCss}</style>
 <style>${themeCss(cfg.theme, cfg.customThemes, this.config.starters)}</style>
+<style>${layoutCss(cfg.layout, this.config.layouts)}</style>
 </head>
 <body>
 <main id="reader-main"><article id="reader-content">${content}</article></main>
@@ -414,7 +416,7 @@ ${mermaidScript}
     const cfg = this.config.get();
     const { html, toc, hasMermaid, wordCount } = await renderMarkdown(text, cfg.frontMatter);
     panel.webview.postMessage({
-      type: 'update', html, toc, hasMermaid, wordCount, config: cfg, themeTokens: THEME_TOKENS, starters: this.config.starters,
+      type: 'update', html, toc, hasMermaid, wordCount, config: cfg, themeTokens: THEME_TOKENS, starters: this.config.starters, layouts: layoutsForWebview(this.config.layouts),
       fileName: path.basename(uri.fsPath),
     });
   }
@@ -559,6 +561,11 @@ ${mermaidScript}
           <option value="dark">Dark</option>
           <option value="sepia">Sepia</option>
         </select>
+      </div>
+
+      <div class="setting-group">
+        <label for="set-layout">Layout</label>
+        <select id="set-layout"></select>
       </div>
 
       <details class="setting-group theme-editor" id="theme-editor">

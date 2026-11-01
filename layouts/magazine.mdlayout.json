@@ -1,0 +1,30 @@
+{
+  "mdReaderLayout": 1,
+  "id": "magazine",
+  "label": "Magazine",
+  "author": "MD Reader starter pack",
+  "version": "1.0.0",
+  "headings": {
+    "font": "'Segoe UI', system-ui, sans-serif",
+    "weight": 800,
+    "lineHeight": 1.15,
+    "spaceBefore": 2,
+    "spaceAfter": 0.5,
+    "scale": {
+      "h1": 2.6,
+      "h2": 1.8,
+      "h3": 1.35,
+      "h4": 1.12,
+      "h5": 1,
+      "h6": 0.9
+    },
+    "rules": {
+      "h1": 4,
+      "h2": 0
+    }
+  },
+  "paragraphs": {
+    "space": 1.2,
+    "indent": 0
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "mdReaderLayout": 1,
+  "id": "book",
+  "label": "Book",
+  "author": "MD Reader starter pack",
+  "version": "1.0.0",
+  "headings": {
+    "font": "Georgia, 'Times New Roman', serif",
+    "weight": 700,
+    "lineHeight": 1.25,
+    "spaceBefore": 2,
+    "spaceAfter": 0.6,
+    "scale": {
+      "h1": 2.1,
+      "h2": 1.6,
+      "h3": 1.3,
+      "h4": 1.12,
+      "h5": 1,
+      "h6": 0.92
+    },
+    "rules": {
+      "h1": 0,
+      "h2": 0
+    }
+  },
+  "paragraphs": {
+    "space": 0.3,
+    "indent": 1.5
+  }
+}
