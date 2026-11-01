@@ -29,4 +29,5 @@ module.exports = {
   contrast,
   themes: () => require('../out/test-build/themes.js'),
   starters: () => require('../out/test-build/starterThemes.js'),
+  textDecode: () => require('../out/test-build/textDecode.js'),
 };

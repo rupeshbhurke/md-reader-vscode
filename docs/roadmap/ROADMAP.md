@@ -1,13 +1,13 @@
 # MD Reader roadmap
 
-Last updated: 2026-11-02 (Phases 1 and 2 released; Phase 3 implemented, awaiting merge and the maintainer's store setup). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
+Last updated: 2026-11-02 (Phases 1–2 released; Phase 3 merged; Phase 4 implemented, awaiting a real-editor test and release). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
 
 ## Status
 
 | | |
 |---|---|
-| Latest release | `v0.3.1` |
-| In flight | `chore/foundation-tests-ci` — Phase 3: test suite, CI, Open VSX and draft releases. No user-visible change, no release of its own |
+| Latest release | `v0.3.1` (Phase 3 and the `showTOC` removal are merged and ship with `0.4.0`) |
+| In flight | `feat/open-without-editor` — Phase 4, version `0.4.0`: open without an editor. Implemented and unit-tested where possible; the editor behaviour has not yet been tried in a real editor |
 | Known issues | none open. The dead `mdReader.showTOC` setting found by the Phase 3 tests has been removed (the TOC always works) |
 | Not in place | verified Marketplace publisher and the `VSCE_PAT` / `OVSX_PAT` secrets (maintainer — see `docs/RELEASING.md`) |
 | Unresolved | F5 debugging crashed the extension host in Windsurf. It looked like a host problem, not this repo's code |
@@ -41,7 +41,7 @@ No new code.
 - 2.3 Done: give all 20 starter themes matching syntax colours, and drop the dark-code-block workaround from the light ones.
 - 2.4 Done (as scripts; becomes real tests in Phase 3): extend the checks to cover the new tokens, including contrast of code text on code background.
 
-## Phase 3 — Foundation (no user-visible change; rides along with any version) — IMPLEMENTED, 3.5 pending (maintainer)
+## Phase 3 — Foundation (no user-visible change; rides along with any version) — DONE, merged; 3.5 pending (maintainer)
 
 - 3.1 Done: real `npm test`: validation, hostile input, export/import round-trip, contrast thresholds, token list matching the `package.json` schema. This also repaired `npm test`, which was a failing stub. It immediately found a dead setting (`showTOC`) and missing highlight.js styles for HTML tags, CSS selectors and Markdown inline code.
 - 3.2 Done: CI on every pull request (Linux + Windows): type-check, test, build, package; the `.vsix` is attached as an artifact.
@@ -51,12 +51,13 @@ No new code.
 
 *Ordering note:* doing Phase 3 before Phase 2 would have the format change arrive already guarded by tests. The current order fixes the visible defect sooner.
 
-## Phase 4 — 0.4.0: open without an editor
+## Phase 4 — 0.4.0: open without an editor — IMPLEMENTED, awaiting release
 
-- 4.1 Accept the URI from an Explorer right-click and load the document with `openTextDocument(uri)`, without opening a tab.
-- 4.2 Stop disposing the panel when the source editor closes (the `onDidCloseTextDocument` handler).
-- 4.3 Add a file watcher per panel and re-read the document on change, so external edits still refresh with no editor open. A hidden document can be released by VS Code, so refresh re-opens it rather than holding a stale handle.
-- Update the architecture notes in `CLAUDE.md`, which currently describe close-disposes-panel.
+- 4.1 Done: accept the URI from an Explorer right-click and load the document with `openTextDocument(uri)`, without opening a tab.
+- 4.2 Done: stop disposing the panel when the source editor closes (the `onDidCloseTextDocument` handler).
+- 4.3 Done: a file watcher per panel; the text is read from disk (or the dirty editor buffer), not from a held `TextDocument`, so there is no stale handle. Automatic triggers are debounced.
+- Also done: Command Palette falls back to a file picker; multi-select in the Explorer opens several; task toggling saves when no editor has the file open; UTF-8 BOM and UTF-16 handled.
+- Done: `CLAUDE.md` architecture notes updated, and a test guards that closing an editor does not close the reader.
 
 ## Phase 5 — 0.5.0: theme system v2
 

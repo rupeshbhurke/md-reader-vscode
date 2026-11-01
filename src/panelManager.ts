@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { ConfigManager, ReaderConfig, SETTABLE_KEYS } from './configManager';
 import { renderMarkdown } from './markdownRenderer';
 import { ThemeManager } from './themeManager';
+import { decodeText } from './textDecode';
 import { THEME_TOKENS, codeThemeFor, effectiveBase, themeCss } from './themes';
 
 export class PanelManager {
@@ -19,6 +20,9 @@ export class PanelManager {
    */
   private ignoreEditorScrollUntil = new Map<string, number>();
 
+  /** Pending debounced refreshes, keyed by document URI string. */
+  private refreshTimers = new Map<string, NodeJS.Timeout>();
+
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly config: ConfigManager,
@@ -27,8 +31,13 @@ export class PanelManager {
 
   // ── Open ────────────────────────────────────────────────────────────────────
 
-  async open(document: vscode.TextDocument, newColumn: boolean): Promise<void> {
-    const key = document.uri.toString();
+  /**
+   * Open (or reveal) the reader for a Markdown file. Takes a URI, not a
+   * TextDocument: the file does not have to be open in an editor — it is read
+   * from disk, watched for changes, and outlives its editor tab.
+   */
+  async open(uri: vscode.Uri, newColumn: boolean): Promise<void> {
+    const key = uri.toString();
 
     // If panel already exists, reveal it
     if (this.panels.has(key)) {
@@ -62,7 +71,7 @@ export class PanelManager {
 
     const localResourceRoots = [
       vscode.Uri.file(path.join(this.context.extensionPath, 'src', 'webview')),
-      vscode.Uri.file(path.dirname(document.fileName)),
+      vscode.Uri.file(path.dirname(uri.fsPath)),
     ];
     if (customCssUri) {
       localResourceRoots.push(vscode.Uri.file(path.dirname(customCssPath)));
@@ -70,7 +79,7 @@ export class PanelManager {
 
     const panel = vscode.window.createWebviewPanel(
       'mdReaderPanel',
-      `📖 ${path.basename(document.fileName)}`,
+      `📖 ${path.basename(uri.fsPath)}`,
       column,
       {
         enableScripts: true,
@@ -86,7 +95,7 @@ export class PanelManager {
     panel.webview.html = this.buildShell(panel.webview, customCssUri);
 
     // Send rendered content
-    await this.sendUpdate(panel, document);
+    await this.sendUpdate(panel, uri);
 
     // Track active panel
     panel.onDidChangeViewState(e => {
@@ -115,14 +124,22 @@ export class PanelManager {
         else if (msg.id === 'importThemes') { await this.themes.importThemes(); }
         else if (msg.id === 'addStarterThemes') { await this.themes.addStarters(); }
       } else if (msg.type === 'toggleTask') {
-        await this.toggleTask(document, msg.index, msg.checked);
+        await this.toggleTask(uri, msg.index, msg.checked);
       } else if (msg.type === 'openLink') {
-        await this.openLink(document, msg.href);
+        await this.openLink(uri, msg.href);
       }
     });
 
+    // Watch the file itself, so external edits refresh the panel even when
+    // no editor has the document open.
+    const watcher = this.watchFile(uri);
+
     // Clean up on close
     panel.onDidDispose(() => {
+      watcher.dispose();
+      const pending = this.refreshTimers.get(key);
+      if (pending) { clearTimeout(pending); this.refreshTimers.delete(key); }
+      this.ignoreEditorScrollUntil.delete(key);
       this.panels.delete(key);
       if (this.activeUri === key) { this.activeUri = undefined; }
     }, null, this.context.subscriptions);
@@ -135,8 +152,66 @@ export class PanelManager {
     const panel = this.panels.get(key);
     if (!panel) { return; }
 
-    const doc = vscode.workspace.textDocuments.find(d => d.uri.toString() === key);
-    if (doc) { await this.sendUpdate(panel, doc); }
+    await this.sendUpdate(panel, uri);
+  }
+
+  /**
+   * Coalesces bursts of triggers — one save fires the file watcher *and* the
+   * document-save event, and editors often write a file in several steps —
+   * into a single re-render. Used by every automatic trigger; manual refresh
+   * calls refresh() directly and is immediate.
+   */
+  refreshDebounced(uri: vscode.Uri, delayMs = 150): void {
+    const key = uri.toString();
+    if (!this.panels.has(key)) { return; }
+    const pending = this.refreshTimers.get(key);
+    if (pending) { clearTimeout(pending); }
+    this.refreshTimers.set(key, setTimeout(() => {
+      this.refreshTimers.delete(key);
+      void this.refresh(uri);
+    }, delayMs));
+  }
+
+  /**
+   * Watches one file on disk. The watcher is on the file's folder with a plain
+   * `*` pattern and filtered by path in the handler, rather than a pattern built
+   * from the file name, because names may contain glob characters ( [ ] { } ).
+   * A recreated file (many editors save by write-temp-then-rename) arrives as
+   * a create event, so both change and create are handled.
+   */
+  private watchFile(uri: vscode.Uri): vscode.Disposable {
+    const dir = vscode.Uri.file(path.dirname(uri.fsPath));
+    const target = path.normalize(uri.fsPath).toLowerCase();   // Windows paths are case-insensitive
+    const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(dir, '*'));
+    const onChange = (changed: vscode.Uri) => {
+      if (path.normalize(changed.fsPath).toLowerCase() !== target) { return; }
+      if (!vscode.workspace.getConfiguration('mdReader').get<boolean>('autoRefresh', true)) { return; }
+      this.refreshDebounced(uri);
+    };
+    watcher.onDidChange(onChange);
+    watcher.onDidCreate(onChange);
+    return watcher;
+  }
+
+  /**
+   * The current text of a Markdown file, without needing it open in an editor.
+   * Unsaved edits in an open editor win (a manual refresh has always previewed
+   * the buffer); otherwise the file on disk is the truth, which also avoids a
+   * stale buffer racing an external change. Returns undefined if nothing can be
+   * read (e.g. the file was deleted) so callers keep showing the last render.
+   */
+  private async readText(uri: vscode.Uri): Promise<string | undefined> {
+    const key = uri.toString();
+    const open = vscode.workspace.textDocuments.find(d => d.uri.toString() === key);
+    if (open?.isDirty) { return open.getText(); }
+    try {
+      const decoded = decodeText(await vscode.workspace.fs.readFile(uri));
+      if (decoded.ok) { return decoded.text; }
+      // UTF-16 / non-UTF-8: let VS Code's own encoding detection decode it.
+      return (await vscode.workspace.openTextDocument(uri)).getText();
+    } catch {
+      return open?.getText();
+    }
   }
 
   async refreshActive(): Promise<void> {
@@ -184,20 +259,19 @@ export class PanelManager {
    */
   async exportActiveAsHtml(): Promise<void> {
     if (!this.activeUri) { return; }
-    const document = vscode.workspace.textDocuments.find(
-      d => d.uri.toString() === this.activeUri
-    );
-    if (!document) { return; }
+    const uri = vscode.Uri.parse(this.activeUri);
+    const text = await this.readText(uri);
+    if (text === undefined) { return; }
 
     const cfg = this.config.get();
     // A custom theme exports as its base theme + a :root override block.
     const exportDataTheme = effectiveBase(cfg.theme, cfg.customThemes, this.config.starters);
-    const { html, hasMermaid } = await renderMarkdown(document.getText(), cfg.frontMatter);
+    const { html, hasMermaid } = await renderMarkdown(text, cfg.frontMatter);
     const embedImages = vscode.workspace.getConfiguration('mdReader')
       .get<boolean>('export.embedImages', true);
 
     const content = embedImages
-      ? this.inlineLocalImages(html, path.dirname(document.fileName))
+      ? this.inlineLocalImages(html, path.dirname(uri.fsPath))
       : html;
 
     const readerCssPath = path.join(this.context.extensionPath, 'src', 'webview', 'reader.css');
@@ -220,7 +294,7 @@ export class PanelManager {
 <html lang="en" data-theme="${exportDataTheme}" data-code-theme="${codeThemeFor(cfg.codeTheme, cfg.theme, cfg.customThemes, this.config.starters)}">
 <head>
 <meta charset="UTF-8">
-<title>${escapeHtml(path.basename(document.fileName))}</title>
+<title>${escapeHtml(path.basename(uri.fsPath))}</title>
 <style>${readerCss}</style>
 <style>${katexCss}</style>
 <style>${themeCss(cfg.theme, cfg.customThemes, this.config.starters)}</style>
@@ -232,7 +306,7 @@ ${mermaidScript}
 </html>`;
 
     const defaultUri = vscode.Uri.file(
-      document.fileName.replace(/\.(md|markdown)$/i, '') + '.html'
+      uri.fsPath.replace(/\.(md|markdown)$/i, '') + '.html'
     );
     const saveUri = await vscode.window.showSaveDialog({
       defaultUri,
@@ -333,13 +407,15 @@ ${mermaidScript}
 
   private async sendUpdate(
     panel: vscode.WebviewPanel,
-    document: vscode.TextDocument
+    uri: vscode.Uri
   ): Promise<void> {
+    const text = await this.readText(uri);
+    if (text === undefined) { return; }   // unreadable (deleted?) — keep the last render
     const cfg = this.config.get();
-    const { html, toc, hasMermaid, wordCount } = await renderMarkdown(document.getText(), cfg.frontMatter);
+    const { html, toc, hasMermaid, wordCount } = await renderMarkdown(text, cfg.frontMatter);
     panel.webview.postMessage({
       type: 'update', html, toc, hasMermaid, wordCount, config: cfg, themeTokens: THEME_TOKENS, starters: this.config.starters,
-      fileName: path.basename(document.fileName),
+      fileName: path.basename(uri.fsPath),
     });
   }
 
@@ -349,10 +425,17 @@ ${mermaidScript}
    * stamps on each `<input type="checkbox">` — see renderer.checkbox there.
    * Edits a single character in place (not a whole-document replace) so
    * undo stays granular and concurrent edits elsewhere in the file are
-   * unaffected. This is an ordinary edit, not a forced save — it follows
-   * the user's normal save/autosave workflow like any other edit.
+   * unaffected. If the file is open in an editor this is an ordinary edit —
+   * it follows the user's normal save/autosave workflow. If NO editor has the
+   * file open, the edit would otherwise sit invisibly as an unsaved buffer, so
+   * it is saved straight away (the user clicked a checkbox in the reader and
+   * expects the file to change).
    */
-  private async toggleTask(document: vscode.TextDocument, index: number, checked: boolean): Promise<void> {
+  private async toggleTask(uri: vscode.Uri, index: number, checked: boolean): Promise<void> {
+    const document = await vscode.workspace.openTextDocument(uri);
+    const key = uri.toString();
+    const hadEditor = vscode.window.visibleTextEditors.some(e => e.document.uri.toString() === key);
+    const wasDirty = document.isDirty;
     const taskLineRe = /^(\s*[-*+]\s+\[)([ xX])\]/;
     let seen = -1;
 
@@ -367,6 +450,7 @@ ${mermaidScript}
       const edit = new vscode.WorkspaceEdit();
       edit.replace(document.uri, range, checked ? 'x' : ' ');
       await vscode.workspace.applyEdit(edit);
+      if (!hadEditor && !wasDirty) { await document.save(); }
       return;
     }
   }
@@ -381,7 +465,7 @@ ${mermaidScript}
    * A bare `#fragment` link never reaches here — the webview scrolls to it
    * locally (see reader.js) without a round trip to the extension host.
    */
-  private async openLink(document: vscode.TextDocument, href: string): Promise<void> {
+  private async openLink(from: vscode.Uri, href: string): Promise<void> {
     if (!href) { return; }
 
     // Has an explicit URI scheme — but don't mistake a Windows drive-letter
@@ -398,16 +482,15 @@ ${mermaidScript}
     const [pathPart] = href.split('#');
     if (!pathPart) { return; }
 
-    const resolved = path.resolve(path.dirname(document.fileName), decodeURIComponent(pathPart));
+    const resolved = path.resolve(path.dirname(from.fsPath), decodeURIComponent(pathPart));
     const uri = vscode.Uri.file(resolved);
 
     if (/\.(md|markdown)$/i.test(pathPart)) {
-      try {
-        const target = await vscode.workspace.openTextDocument(uri);
-        await this.open(target, false);
-      } catch {
+      if (!fs.existsSync(resolved)) {
         vscode.window.showWarningMessage(`MD Reader: couldn't open "${pathPart}".`);
+        return;
       }
+      await this.open(uri, false);
       return;
     }
 

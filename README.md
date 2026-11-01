@@ -4,7 +4,7 @@ A reading-focused, fully customizable Markdown viewer for Visual Studio Code. Un
 
 ## Getting started
 
-1. Right-click a `.md` file (in the Explorer, an editor tab, or inside the editor) → **Open in MD Reader**.
+1. Right-click a `.md` file (in the Explorer, an editor tab, or inside the editor) → **Open in MD Reader**. The file does **not** need to be open in an editor: right-click it in the Explorer, or run the command from the Command Palette and pick a file. Select several `.md` files in the Explorer to open them all at once.
 2. Once a reader panel is focused, its title bar shows a small toolbar: **Find**, **Table of Contents**, **Settings**, **Refresh**, and a **?** (keyboard shortcuts) icon.
 3. Press **`?`** anywhere in the panel, or click the **?** icon, to see every keyboard shortcut without leaving the reader.
 4. `Ctrl+Shift+P` → type **MD Reader** to see every command this extension adds, including the two not in the toolbar (**Export as PDF...**, **Export as HTML...**).
@@ -32,7 +32,7 @@ That command-palette list and the in-panel `?` overlay are the two fastest ways 
 - 🔖 **Heading anchor links** — hover a heading for a "copy link" button (`file.md#heading-id`).
 - 🖼️ **Image lightbox** — click any image for a full-screen, scroll-to-zoom preview.
 - 📌 **Scroll position persistence** — a save-triggered refresh doesn't jerk the reader back to the top.
-- 🔄 **Auto-refresh** — panels update automatically on save, *and* when the file changes outside VS Code's editor (another program, `git checkout`, a second VS Code window) while the tab is open in the background.
+- 🔄 **Auto-refresh** — panels update automatically on save, *and* when the file changes outside VS Code's editor (another program, `git checkout`, a second VS Code window) — whether or not the file is open in an editor. Closing the Markdown editor tab does not close the reader.
 - 🔗 **Scroll sync** — two-way synchronization between the editor and reader panel.
 - 🖨️ **Export as PDF** — via a dedicated print stylesheet and VS Code's native print dialog.
 - 📤 **Export as HTML** — a standalone, self-contained `.html` file (styles + local images inlined).
@@ -43,7 +43,7 @@ That command-palette list and the in-panel `?` overlay are the two fastest ways 
 
 | Action | How |
 |---|---|
-| Open reader (split view) | Right-click a `.md` file → **Open in MD Reader** |
+| Open reader (split view) | Right-click a `.md` file (open in an editor or not) → **Open in MD Reader** |
 | Open in new column | `Ctrl+Shift+P` → **MD Reader: Open in MD Reader (New Column)** |
 | Refresh current / all panels | `Ctrl+Shift+P` → **MD Reader: Refresh Reader** / **Refresh All Reader Panels** |
 | Export as PDF | `Ctrl+Shift+P` → **MD Reader: Export as PDF...** (opens VS Code's print dialog — choose "Save as PDF") |
@@ -213,7 +213,7 @@ Every command below is reachable via `Ctrl+Shift+P` under the **MD Reader** cate
 
 | Command | Also available as |
 |---|---|
-| Open in MD Reader | Right-click a `.md` file |
+| Open in MD Reader | Right-click a `.md` file; from the Command Palette it uses the active Markdown editor, or asks you to pick a file |
 | Open in MD Reader (New Column) | — |
 | Toggle Table of Contents | Toolbar `$(list-tree)`, `t` |
 | MD Reader Settings | Toolbar `$(gear)`, `s` |
@@ -230,7 +230,7 @@ Every command below is reachable via `Ctrl+Shift+P` under the **MD Reader** cate
 
 ## Context Menus
 
-Right-clicking a `.md` file in the **Explorer** or **editor tab** also shows **Open in MD Reader**.
+Right-clicking a `.md` file in the **Explorer** or **editor tab** also shows **Open in MD Reader**. Selecting several files in the Explorer opens one reader panel per file.
 
 ## Windows App
 

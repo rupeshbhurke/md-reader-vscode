@@ -15,16 +15,18 @@ export function activate(context: vscode.ExtensionContext) {
   panelManager.setupScrollSync(context);
 
   // ── Commands ────────────────────────────────────────────────────────────────
+  // The two open commands take the file as an argument (Explorer, editor-tab and
+  // editor context menus pass it), so a Markdown file does NOT have to be open
+  // in an editor. From the Command Palette they fall back to the active Markdown
+  // editor, then to a file picker.
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('mdReader.open', () => {
-      const doc = activeMarkdownDocument();
-      if (doc) { panelManager.open(doc, false); }
+    vscode.commands.registerCommand('mdReader.open', async (uri?: vscode.Uri, selected?: vscode.Uri[]) => {
+      for (const target of await resolveTargets(uri, selected)) { await panelManager.open(target, false); }
     }),
 
-    vscode.commands.registerCommand('mdReader.openNewColumn', () => {
-      const doc = activeMarkdownDocument();
-      if (doc) { panelManager.open(doc, true); }
+    vscode.commands.registerCommand('mdReader.openNewColumn', async (uri?: vscode.Uri, selected?: vscode.Uri[]) => {
+      for (const target of await resolveTargets(uri, selected)) { await panelManager.open(target, true); }
     }),
 
     vscode.commands.registerCommand('mdReader.toggleTOC', () => {
@@ -66,30 +68,28 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // ── Auto-refresh ─────────────────────────────────────────────────────────────
-  // Two triggers are needed, not one:
+  // PanelManager watches each panel's own file on disk, which covers every case
+  // for a file that is NOT open in an editor (another program, `git checkout`,
+  // a build script, a second VS Code window, ...). The two document events below
+  // remain for files that ARE open, and for file systems where the OS watcher
+  // does not fire (some remote/virtual workspaces). All three funnel into
+  // refreshDebounced(), so one save still produces one refresh.
   //
-  // 1. onDidSaveTextDocument — a save made *through* VS Code's own editor
-  //    (Ctrl+S, Save All, format-on-save, ...).
-  // 2. onDidChangeTextDocument, filtered to `!document.isDirty` — a file
-  //    changed *outside* VS Code's editor (another program, another VS Code
-  //    window, `git checkout`, a build script, editing in Notepad, etc.)
-  //    while the document is open here, even in a background/unfocused tab.
-  //    VS Code detects the on-disk change and silently reloads the buffer;
-  //    that reload fires onDidChangeTextDocument, never onDidSaveTextDocument
-  //    — so relying on (1) alone means an external save never refreshes the
-  //    preview. `!isDirty` is what distinguishes this reload (buffer now
-  //    matches disk) from ordinary live typing (buffer instantly goes dirty),
-  //    which we still don't want to preview on every keystroke.
+  // 1. onDidSaveTextDocument — a save made through VS Code's own editor.
+  // 2. onDidChangeTextDocument, filtered to `!document.isDirty` — VS Code
+  //    reloading an open buffer after an external change. `!isDirty`
+  //    distinguishes that reload (buffer now matches disk) from ordinary live
+  //    typing (buffer instantly goes dirty), which we don't preview per keystroke.
 
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument(doc => {
-      if (shouldAutoRefresh(doc)) { panelManager.refresh(doc.uri); }
+      if (shouldAutoRefresh(doc)) { panelManager.refreshDebounced(doc.uri); }
     }),
 
     vscode.workspace.onDidChangeTextDocument(e => {
       if (e.contentChanges.length === 0) { return; }
       if (e.document.isDirty) { return; }
-      if (shouldAutoRefresh(e.document)) { panelManager.refresh(e.document.uri); }
+      if (shouldAutoRefresh(e.document)) { panelManager.refreshDebounced(e.document.uri); }
     })
   );
 
@@ -103,15 +103,9 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // ── Dispose panels when their source document closes ───────────────────────
-
-  context.subscriptions.push(
-    vscode.workspace.onDidCloseTextDocument(doc => {
-      if (doc.languageId === 'markdown') {
-        panelManager.disposeForUri(doc.uri);
-      }
-    })
-  );
+  // Panels deliberately outlive their source editor: closing the Markdown tab
+  // must not close the reader (that was the old "file must stay open" rule).
+  // A panel goes away when the user closes it, or the extension deactivates.
 }
 
 export function deactivate() {
@@ -125,11 +119,31 @@ function shouldAutoRefresh(document: vscode.TextDocument): boolean {
   return vscode.workspace.getConfiguration('mdReader').get<boolean>('autoRefresh', true);
 }
 
-function activeMarkdownDocument(): vscode.TextDocument | undefined {
-  const editor = vscode.window.activeTextEditor;
-  if (editor && editor.document.languageId === 'markdown') {
-    return editor.document;
+const MARKDOWN_FILE = /\.(md|markdown)$/i;
+
+/**
+ * Which file(s) a command invocation means, in order of preference:
+ *   1. an explicit multi-selection (Explorer passes `(clicked, allSelected)`),
+ *   2. an explicit resource URI (Explorer / editor-tab / editor context menu),
+ *   3. the active Markdown editor,
+ *   4. a file picker (Command Palette with nothing relevant open).
+ */
+async function resolveTargets(uri?: vscode.Uri, selected?: vscode.Uri[]): Promise<vscode.Uri[]> {
+  if (Array.isArray(selected) && selected.length > 1) {
+    const markdown = selected.filter(u => MARKDOWN_FILE.test(u.fsPath));
+    if (markdown.length > 0) { return markdown; }
   }
-  vscode.window.showWarningMessage('MD Reader: Open a Markdown file first.');
-  return undefined;
+  if (uri instanceof vscode.Uri) { return [uri]; }
+
+  const editor = vscode.window.activeTextEditor;
+  if (editor && editor.document.languageId === 'markdown') { return [editor.document.uri]; }
+
+  const picked = await vscode.window.showOpenDialog({
+    canSelectMany: true,
+    canSelectFiles: true,
+    canSelectFolders: false,
+    filters: { Markdown: ['md', 'markdown'] },
+    openLabel: 'Open in MD Reader',
+  });
+  return picked ?? [];
 }
