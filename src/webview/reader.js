@@ -234,7 +234,35 @@
       setThemeVars(custom ? custom.theme.colors || {} : {});
       loadEditorFrom(cfg, custom);
     }
+    applyCodeTheme(cfg);
     updateEditorButtons();
+  }
+
+  // Syntax palette (mdReader.codeTheme). A light palette on a dark code block
+  // (or the reverse) is unreadable, so on a polarity mismatch against the
+  // effective code-block colour fall back to the matching GitHub palette.
+  // A theme that sets its own syntax colours overrides the palette regardless.
+  const CODE_THEMES = ['github-dark', 'github-light', 'monokai', 'atom-one-dark', 'vs2015'];
+
+  function hexLuminance(hex) {
+    const h = hex.slice(1);
+    const c = [0, 2, 4].map(function (i) {
+      const v = parseInt(h.slice(i, i + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+
+  function applyCodeTheme(cfg) {
+    const root = document.documentElement;
+    let name = CODE_THEMES.indexOf(cfg.codeTheme) >= 0 ? cfg.codeTheme : 'github-dark';
+    root.setAttribute('data-code-theme', name);
+    const preBg = readVar('--pre-bg');
+    if (!preBg) { return; }
+    const lum = hexLuminance(toHex(preBg));
+    if (name === 'github-light' && lum < 0.35) { name = 'github-dark'; }
+    else if (name !== 'github-light' && lum > 0.6) { name = 'github-light'; }
+    root.setAttribute('data-code-theme', name);
   }
 
   function rebuildThemeOptions(cfg) {

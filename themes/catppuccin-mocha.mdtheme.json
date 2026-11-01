@@ -18,6 +18,16 @@
     "preBg": "#11111b",
     "preText": "#cdd6f4",
     "quoteBg": "#262637",
-    "tableStripe": "#232334"
+    "tableStripe": "#232334",
+    "hlKeyword": "#cba6f7",
+    "hlString": "#a6e3a1",
+    "hlComment": "#8f93ad",
+    "hlNumber": "#fab387",
+    "hlTitle": "#89b4fa",
+    "hlType": "#f9e2af",
+    "hlVariable": "#f38ba8",
+    "hlAttr": "#94e2d5",
+    "hlMeta": "#f5c2e7",
+    "hlBuiltIn": "#f9e2af"
   }
 }

@@ -15,9 +15,19 @@
     "selection": "#b6e3ff",
     "codeBg": "#eaeef2",
     "codeText": "#cf222e",
-    "preBg": "#0d1117",
-    "preText": "#e6edf3",
+    "preBg": "#f6f8fa",
+    "preText": "#1f2328",
     "quoteBg": "#f3f6fa",
-    "tableStripe": "#f6f8fa"
+    "tableStripe": "#f6f8fa",
+    "hlKeyword": "#cf222e",
+    "hlString": "#0a3069",
+    "hlComment": "#59636e",
+    "hlNumber": "#0550ae",
+    "hlTitle": "#8250df",
+    "hlType": "#953800",
+    "hlVariable": "#0550ae",
+    "hlAttr": "#0550ae",
+    "hlMeta": "#0550ae",
+    "hlBuiltIn": "#953800"
   }
 }

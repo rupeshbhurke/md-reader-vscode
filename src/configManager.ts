@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { CustomThemes, resolveThemeValue, sanitizeThemes } from './themes';
+import { CustomThemes, resolveCodeTheme, resolveThemeValue, sanitizeThemes } from './themes';
 
 const THEMES = ['auto', 'light', 'dark', 'sepia'] as const;
 const WIDTHS  = ['narrow', 'medium', 'wide', 'wider', 'ultra', 'full'] as const;
@@ -72,6 +72,7 @@ export class ConfigManager {
     // and a `theme` pointing at a deleted custom theme falls back to auto.
     result.customThemes = sanitizeThemes(result.customThemes);
     result.theme = resolveThemeValue(result.theme, result.customThemes, this.starters);
+    result.codeTheme = resolveCodeTheme(result.codeTheme);
     return result;
   }
 

@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { ConfigManager, ReaderConfig, SETTABLE_KEYS } from './configManager';
 import { renderMarkdown } from './markdownRenderer';
 import { ThemeManager } from './themeManager';
-import { THEME_TOKENS, effectiveBase, themeCss } from './themes';
+import { THEME_TOKENS, codeThemeFor, effectiveBase, themeCss } from './themes';
 
 export class PanelManager {
   /** Map of document URI → webview panel */
@@ -217,7 +217,7 @@ export class PanelManager {
       : '';
 
     const standalone = `<!DOCTYPE html>
-<html lang="en" data-theme="${exportDataTheme}">
+<html lang="en" data-theme="${exportDataTheme}" data-code-theme="${codeThemeFor(cfg.codeTheme, cfg.theme, cfg.customThemes, this.config.starters)}">
 <head>
 <meta charset="UTF-8">
 <title>${escapeHtml(path.basename(document.fileName))}</title>

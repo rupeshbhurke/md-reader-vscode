@@ -729,8 +729,95 @@ pre.mermaid[data-processed] {
   to { transform: rotate(360deg); }
 }
 
-/* ── Highlight.js overrides (ensure pre bg matches) ───────────────────────── */
-.hljs { background: transparent !important; }
+/* ── Syntax highlighting ───────────────────────────────────────────────────── */
+/* highlight.js emits classes only; the colours live here as variables so that
+   (1) mdReader.codeTheme can pick a palette via <html data-code-theme>, and
+   (2) a custom/starter theme can override any of them (inline on <html>, which
+   beats these attribute rules). Defaults below = github-dark. */
+:root {
+  --hl-keyword:  #ff7b72;
+  --hl-string:   #a5d6ff;
+  --hl-comment:  #8b949e;
+  --hl-number:   #79c0ff;
+  --hl-title:    #d2a8ff;
+  --hl-type:     #ff7b72;
+  --hl-variable: #79c0ff;
+  --hl-attr:     #79c0ff;
+  --hl-meta:     #79c0ff;
+  --hl-built-in: #ffa657;
+}
+
+/* github-light is the one light palette: it also lightens the code block,
+   unless the active theme sets its own --pre-bg / --pre-text. */
+[data-code-theme="github-light"] {
+  --pre-bg: #f6f8fa;
+  --pre-text: #24292e;
+  --hl-keyword:  #d73a49;
+  --hl-string:   #032f62;
+  --hl-comment:  #6a737d;
+  --hl-number:   #005cc5;
+  --hl-title:    #6f42c1;
+  --hl-type:     #d73a49;
+  --hl-variable: #005cc5;
+  --hl-attr:     #005cc5;
+  --hl-meta:     #005cc5;
+  --hl-built-in: #e36209;
+}
+
+[data-code-theme="monokai"] {
+  --hl-keyword:  #f92672;
+  --hl-string:   #a6e22e;
+  --hl-comment:  #75715e;
+  --hl-number:   #f92672;
+  --hl-title:    #a6e22e;
+  --hl-type:     #a6e22e;
+  --hl-variable: #a6e22e;
+  --hl-attr:     #bf79db;
+  --hl-meta:     #75715e;
+  --hl-built-in: #a6e22e;
+}
+
+[data-code-theme="atom-one-dark"] {
+  --hl-keyword:  #c678dd;
+  --hl-string:   #98c379;
+  --hl-comment:  #5c6370;
+  --hl-number:   #d19a66;
+  --hl-title:    #61aeee;
+  --hl-type:     #d19a66;
+  --hl-variable: #d19a66;
+  --hl-attr:     #d19a66;
+  --hl-meta:     #61aeee;
+  --hl-built-in: #e6c07b;
+}
+
+[data-code-theme="vs2015"] {
+  --hl-keyword:  #569cd6;
+  --hl-string:   #d69d85;
+  --hl-comment:  #57a64a;
+  --hl-number:   #b8d7a3;
+  --hl-title:    #dcdcdc;
+  --hl-type:     #4ec9b0;
+  --hl-variable: #bd63c5;
+  --hl-attr:     #9cdcfe;
+  --hl-meta:     #9b9b9b;
+  --hl-built-in: #4ec9b0;
+}
+
+.hljs { background: transparent !important; color: var(--pre-text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-doctag { color: var(--hl-keyword); }
+.hljs-string, .hljs-regexp, .hljs-addition { color: var(--hl-string); }
+.hljs-comment, .hljs-quote { color: var(--hl-comment); font-style: italic; }
+.hljs-number, .hljs-literal { color: var(--hl-number); }
+.hljs-title, .hljs-section { color: var(--hl-title); }
+.hljs-title.class_, .hljs-title.class_.inherited__, .hljs-type { color: var(--hl-type); }
+.hljs-variable, .hljs-template-variable, .hljs-params { color: var(--hl-variable); }
+.hljs-attr, .hljs-attribute, .hljs-property { color: var(--hl-attr); }
+.hljs-meta, .hljs-symbol, .hljs-bullet, .hljs-link { color: var(--hl-meta); }
+.hljs-built_in, .hljs-name { color: var(--hl-built-in); }
+.hljs-deletion { color: var(--hl-keyword); }
+.hljs-subst, .hljs-punctuation, .hljs-operator { color: var(--pre-text); }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: 700; }
 
 /* ── Smooth content fade-in ────────────────────────────────────────────────── */
 @keyframes fadeIn {

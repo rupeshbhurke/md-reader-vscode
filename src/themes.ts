@@ -37,9 +37,26 @@ export const THEME_TOKENS: readonly ThemeToken[] = [
   { key: 'preText',     label: 'Code block text',   group: 'Code',     vars: ['--pre-text'] },
   { key: 'quoteBg',     label: 'Blockquote bg',     group: 'Content',  vars: ['--blockquote-bg'] },
   { key: 'tableStripe', label: 'Table stripe',      group: 'Content',  vars: ['--table-stripe'] },
+  { key: 'hlKeyword', label: 'Keyword', group: 'Syntax', vars: ['--hl-keyword'] },
+  { key: 'hlString', label: 'String', group: 'Syntax', vars: ['--hl-string'] },
+  { key: 'hlComment', label: 'Comment', group: 'Syntax', vars: ['--hl-comment'] },
+  { key: 'hlNumber', label: 'Number & literal', group: 'Syntax', vars: ['--hl-number'] },
+  { key: 'hlTitle', label: 'Function name', group: 'Syntax', vars: ['--hl-title'] },
+  { key: 'hlType', label: 'Type / class', group: 'Syntax', vars: ['--hl-type'] },
+  { key: 'hlVariable', label: 'Variable', group: 'Syntax', vars: ['--hl-variable'] },
+  { key: 'hlAttr', label: 'Attribute', group: 'Syntax', vars: ['--hl-attr'] },
+  { key: 'hlMeta', label: 'Meta / symbol', group: 'Syntax', vars: ['--hl-meta'] },
+  { key: 'hlBuiltIn', label: 'Built-in', group: 'Syntax', vars: ['--hl-built-in'] },
 ];
 
 const TOKEN_KEYS = new Set(THEME_TOKENS.map(t => t.key));
+
+/** Code-block syntax palettes (`mdReader.codeTheme`). Defined as CSS variables in reader.css. */
+export const CODE_THEMES = ['github-dark', 'github-light', 'monokai', 'atom-one-dark', 'vs2015'] as const;
+export const DEFAULT_CODE_THEME = 'github-dark';
+export function resolveCodeTheme(value: unknown): string {
+  return (CODE_THEMES as readonly unknown[]).includes(value) ? (value as string) : DEFAULT_CODE_THEME;
+}
 
 export interface CustomTheme {
   label: string;
@@ -153,6 +170,36 @@ export function themeCss(theme: string, custom: CustomThemes, starters: CustomTh
     if (value) { for (const v of token.vars) { decls.push(`${v}:${value}`); } }
   }
   return decls.length ? `:root{${decls.join(';')}}` : '';
+}
+
+/** WCAG relative luminance of a #rgb/#rrggbb colour, or undefined for anything else. */
+function hexLuminance(color: string): number | undefined {
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color);
+  if (!m) { return undefined; }
+  const h = m[1].length === 3 ? m[1].split('').map(c => c + c).join('') : m[1];
+  const [r, g, b] = [0, 2, 4].map(i => {
+    const v = parseInt(h.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/**
+ * The syntax palette to actually use for HTML export (the live reader does the
+ * same check against the computed style). A light palette on a dark code block,
+ * or the reverse, is unreadable, so a polarity mismatch against the theme's own
+ * code-block colour falls back to the matching GitHub palette. A theme that
+ * sets its own syntax colours is left alone — it overrides the palette anyway.
+ */
+export function codeThemeFor(codeTheme: string, theme: string, custom: CustomThemes, starters: CustomThemes): string {
+  const base = resolveCodeTheme(codeTheme);
+  const t = lookupTheme(theme, custom, starters);
+  const preBg = t?.colors.preBg;
+  const lum = preBg ? hexLuminance(preBg) : undefined;
+  if (lum === undefined) { return base; }
+  if (base === 'github-light' && lum < 0.35) { return 'github-dark'; }
+  if (base !== 'github-light' && lum > 0.6) { return 'github-light'; }
+  return base;
 }
 
 // ── Export / import file format ───────────────────────────────────────────────
