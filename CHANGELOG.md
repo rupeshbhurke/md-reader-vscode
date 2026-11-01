@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [0.3.0] — 2026-11-01
+## [0.3.0] — 2026-11-02
 
 ### Added
 - Custom themes: create, edit, save and delete your own colour themes from the settings drawer (**Customize theme**), with live preview and 14 themeable colours. A theme stores only the colours you changed plus a base theme.
