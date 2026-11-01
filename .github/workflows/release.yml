@@ -1,0 +1,29 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run compile          # type-check
+      - run: npx vsce package --no-dependencies
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: '*.vsix'
+          generate_release_notes: true
+      # Optional: publish to the Marketplace
+      - run: npx vsce publish --no-dependencies -p ${{ secrets.VSCE_PAT }}
+        if: ${{ env.HAS_PAT == 'true' }}
+        env:
+          HAS_PAT: ${{ secrets.VSCE_PAT != '' }}
