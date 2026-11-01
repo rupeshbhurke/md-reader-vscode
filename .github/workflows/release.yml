@@ -1,4 +1,15 @@
 name: Release
+
+# Push a tag like v0.4.0 to release. See docs/RELEASING.md.
+#
+#   1. verify  — the same checks as CI, plus: the tag must match package.json.
+#   2. release — creates a DRAFT GitHub release with the .vsix, publishes to the
+#                VS Code Marketplace and Open VSX (when their tokens are set),
+#                and only then un-drafts the release. If any publish step fails
+#                the release stays a draft for a human to look at.
+#
+# A tag with a hyphen (v0.4.0-beta.1) is a pre-release: it gets a GitHub
+# pre-release only and is NOT sent to the Marketplace or Open VSX.
 on:
   push:
     tags: ['v*']
@@ -7,18 +18,78 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+
       - run: npm ci
-      - run: npm run compile          # type-check
-      - run: npx vsce package --no-dependencies
-      - uses: softprops/action-gh-release@v2
+
+      - name: Tag must match package.json version
+        run: |
+          node -e "
+            const v = require('./package.json').version;
+            const t = process.env.GITHUB_REF_NAME.replace(/^v/, '');
+            if (t !== v && !t.startsWith(v + '-')) {
+              console.error('Tag ' + process.env.GITHUB_REF_NAME + ' does not match package.json version ' + v);
+              process.exit(1);
+            }"
+
+      - name: Type-check
+        run: npm run compile
+
+      - name: Test
+        run: npm test
+
+      - name: Package .vsix
+        run: npx vsce package --no-dependencies -o md-reader.vsix
+
+      - uses: actions/upload-artifact@v4
         with:
-          files: '*.vsix'
-          generate_release_notes: true
+          name: md-reader-vsix
+          path: md-reader.vsix
+          retention-days: 7
+
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: md-reader-vsix
+
+      - name: Create draft GitHub release
+        run: |
+          PRERELEASE=""
+          case "$GITHUB_REF_NAME" in *-*) PRERELEASE="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" md-reader.vsix \
+            --draft --generate-notes --title "$GITHUB_REF_NAME" $PRERELEASE
+
+      - name: Publish to the VS Code Marketplace
+        if: env.VSCE_PAT != '' && !contains(github.ref_name, '-')
+        run: npx vsce publish --packagePath md-reader.vsix -p "$VSCE_PAT"
+
+      - name: Publish to Open VSX
+        if: env.OVSX_PAT != '' && !contains(github.ref_name, '-')
+        run: npx ovsx publish md-reader.vsix -p "$OVSX_PAT"
+
+      - name: Publish the GitHub release
+        run: gh release edit "$GITHUB_REF_NAME" --draft=false

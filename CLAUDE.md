@@ -19,7 +19,8 @@ Every change that alters behaviour, settings, commands, the message protocol, th
 - `CHANGELOG.md` — an entry under the new version (Added / Changed / Fixed), dated.
 - `CLAUDE.md` — architecture, settings, message protocol, rules.
 - `docs/roadmap/ROADMAP.md` — status table, and mark phases/steps done or re-ordered when plans change.
-- `package.json` + `package-lock.json` version, when a release is being prepared.
+- `package.json` + `package-lock.json` version, when a release is being prepared (`npm test` fails if these and the top `CHANGELOG.md` entry disagree; pending work goes under `## [Unreleased]`).
+- `docs/RELEASING.md` — when the release process changes.
 
 Check these before opening a PR; if a doc needs no change, that is fine, but decide deliberately.
 
@@ -28,8 +29,9 @@ Check these before opening a PR; if a doc needs no change, that is fine, but dec
 - `npm run build` — `copy-assets` then bundle extension via esbuild → `out/extension.js` (what `vscode:prepublish` runs).
 - `npm run copy-assets` — copies mermaid's browser bundle + KaTeX's CSS/fonts from `node_modules` into `src/webview/vendor/` (gitignored, regenerated on every build — see `scripts/copy-vendor-assets.js`). Run this (or `npm run build`) after a fresh clone/`npm install`, or `reader.js`'s mermaid lazy-load and the KaTeX `<link>` in `buildShell` will 404.
 - `npm run watch` — esbuild in watch mode.
-- `npm run compile` — `tsc -p ./`. Covers `src/**/*.ts` only; `src/webview/reader.js` is plain JS and is **never** type-checked or bundled by anything — it ships as-is and is only exercised by actually opening a panel. Note this emits unbundled `out/*.js` over esbuild's `out/extension.js`, so re-run `npm run build` before packaging if you've run `compile` since.
-- `npm test` — **currently a stub**: there is no `src/test/`, no `out/test/runTest.js`, and no `@vscode/test-electron` dependency, so this command fails. There are no automated tests in this repo; verify changes by pressing F5 and exercising the Extension Development Host.
+- `npm run compile` — `tsc -p ./ --noEmit`, a pure type-check (it deliberately emits nothing, so it can never overwrite the esbuild bundle `out/extension.js`). Covers `src/**/*.ts` only; `src/webview/reader.js` is plain JS and is **never** type-checked or bundled by anything — it ships as-is and is only exercised by actually opening a panel (or, for logic, by tests that read its source).
+- `npm test` — `scripts/run-tests.js`: bundles the pure modules (`src/themes.ts`, `src/starterThemes.ts`) with esbuild into `out/test-build/`, then runs every `test/*.test.js` with Node's built-in runner (`node --test`; no test framework dependency). Tests cannot import anything that needs `vscode`, so logic that should be tested must live in `vscode`-free modules (as `themes.ts` does). The suite also guards cross-file consistency: every highlight.js class has a CSS rule, `package.json` ↔ `configManager.ts` settings agree and are all read (`KNOWN_UNUSED` in `test/project.test.js` lists known-dead settings — it may only shrink), commands are declared and registered, starter themes meet contrast thresholds, and `package.json`/lock/`CHANGELOG.md` versions agree. UI behaviour still needs F5 in the Extension Development Host.
+- CI (`.github/workflows/ci.yml`) runs compile + test + build + `vsce package` on every PR (Linux and Windows). **A PR should not be merged red.** Releases: push a `vX.Y.Z` tag — see `docs/RELEASING.md` (draft release, Marketplace + Open VSX publish when tokens exist, pre-release tags for hyphenated versions).
 - Debug: F5 in VS Code (uses `.vscode/launch.json`) launches Extension Development Host.
 - Package: `vsce package` (devDependency `@vscode/vsce`) produces the `.vsix`.
 

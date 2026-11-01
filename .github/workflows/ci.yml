@@ -1,0 +1,55 @@
+name: CI
+
+# Runs on every pull request and on pushes to main. The same checks gate a
+# release (see release.yml), so a green PR means a releasable tree.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check
+        run: npm run compile
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Proves the manifest and file set package cleanly.
+      - name: Package .vsix
+        run: npx vsce package --no-dependencies -o md-reader-ci.vsix
+
+      # Lets a reviewer install the exact PR build (Extensions → … → Install from VSIX).
+      - name: Upload .vsix
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: md-reader-vsix
+          path: md-reader-ci.vsix
+          retention-days: 14

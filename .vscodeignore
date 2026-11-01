@@ -13,3 +13,5 @@ CLAUDE.md
 *.vsix
 out/test/**
 docs/**
+test/**
+out/test-build/**
