@@ -2,7 +2,7 @@
   "name": "md-reader",
   "displayName": "MD Reader",
   "description": "A reading-focused, fully customizable Markdown viewer with independent multi-document support.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "rupeshbhurke",
   "author": {
     "name": "Rupesh H Bhurke",
@@ -305,6 +305,56 @@
                     "type": "string",
                     "format": "color",
                     "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "hlKeyword": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "hlString": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "hlComment": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "hlNumber": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "hlTitle": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "hlType": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "hlVariable": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "hlAttr": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "hlMeta": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "hlBuiltIn": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
                   }
                 }
               }
@@ -366,7 +416,7 @@
             "atom-one-dark",
             "vs2015"
           ],
-          "description": "Syntax highlighting theme for code blocks."
+          "description": "Syntax-highlighting palette for code blocks. A theme that defines its own syntax colors (see mdReader.customThemes) overrides this. github-light also lightens the code block background."
         },
         "mdReader.blueLightFilter": {
           "type": "number",

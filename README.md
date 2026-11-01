@@ -22,7 +22,7 @@ That command-palette list and the in-panel `?` overlay are the two fastest ways 
 - 📊 **Reading progress bar + estimated reading time** — A thin progress bar tracks scroll position; a small corner badge shows "N min read · N,NNN words" (configurable words-per-minute).
 - 🔍 **Find in document** — `Ctrl`/`Cmd`+`F` opens an in-panel find bar (VS Code's own Find doesn't reach webview content) with match count, case toggle, and Enter/Shift+Enter navigation.
 - ⌨️ **Full reading-mode keyboard map** — see [Keyboard Shortcuts](#keyboard-shortcuts) below, or press `?` in the panel.
-- 💻 **Syntax highlighting** — Code blocks with language labels and one-click copy-to-clipboard.
+- 💻 **Syntax highlighting** — Code blocks with language labels and one-click copy-to-clipboard, in five palettes (`mdReader.codeTheme`); themes can carry their own syntax colours.
 - 📈 **Mermaid diagrams** — ` ```mermaid ` fenced code blocks render as diagrams (lazy-loaded, so documents without one pay no cost).
 - 🧮 **Math (KaTeX)** — `$inline$` and `$$block$$` math, rendered server-side.
 - 📝 **GFM footnotes** — `[^1]` reference / `[^1]: definition` syntax, with back-reference links.
@@ -88,13 +88,13 @@ Single-key shortcuts (`j`, `k`, `t`, `s`, etc.) are disabled while focus is in t
 
 Besides Auto, Light, Dark and Sepia you can create your own colour themes.
 
-**Create one:** open the settings drawer (gear icon or `s`) → expand **Customize theme**. Pick a *Based on* theme, change any of the 14 colours with the colour pickers (the page updates live as you go), give it a name and press **Save**. Only the colours you change are stored; everything else follows the base theme. The ↺ button next to a colour returns it to the base. **Save as new** keeps the original and saves a copy. Your themes appear under **My themes** in the Theme dropdown.
+**Create one:** open the settings drawer (gear icon or `s`) → expand **Customize theme**. Pick a *Based on* theme, change any of the 24 colours (14 for the page, 10 for code syntax) with the colour pickers (the page updates live as you go), give it a name and press **Save**. Only the colours you change are stored; everything else follows the base theme. The ↺ button next to a colour returns it to the base. **Save as new** keeps the original and saves a copy. Your themes appear under **My themes** in the Theme dropdown.
 
 **Export and import:** the **Export**, **Export all** and **Import…** buttons in the same panel (or the commands **MD Reader: Export Themes…** / **Import Themes…**) write and read `.json` theme files. Use them to back up your themes, move them to another machine, or share them. When an imported theme has the same id as one you already have, you choose once to **Replace**, **Keep both** or **Skip** for all of them.
 
 ### Starter themes
 
-MD Reader ships 20 ready-made themes under **Starter themes** in the Theme dropdown: Solarized Light/Dark, Nord, Dracula, Gruvbox Light/Dark, One Dark, Monokai, Tokyo Night, Catppuccin Latte/Mocha, Rosé Pine and Dawn, GitHub Light/Dark, Ayu Light, Night Owl, Paper, Forest and High Contrast. Text, link and code colours in every one meet WCAG AA contrast, and body text meets AAA.
+MD Reader ships 20 ready-made themes under **Starter themes** in the Theme dropdown: Solarized Light/Dark, Nord, Dracula, Gruvbox Light/Dark, One Dark, Monokai, Tokyo Night, Catppuccin Latte/Mocha, Rosé Pine and Dawn, GitHub Light/Dark, Ayu Light, Night Owl, Paper, Forest and High Contrast. Text, link, code and syntax colours in every one meet WCAG AA contrast, and body text meets AAA. Each carries its own matching syntax colours, and the light ones have light code blocks.
 
 Starter themes are plain theme files in the extension's [`themes/`](themes) folder, in exactly the same format Export writes and Import reads. They are read-only: pick one and press **Save as new** to get your own editable copy, or press **Add starter themes** (or run **MD Reader: Add Starter Themes to My Themes…**) to copy them all into **My themes**.
 
@@ -197,7 +197,7 @@ All settings are under `mdReader.*` in VS Code Settings (`Ctrl+,`):
 | `mdReader.lineHeight` | `1.85` | Line spacing multiplier |
 | `mdReader.readingWidth` | `medium` | Reading column width |
 | `mdReader.showTOC` | `true` | Enable table of contents |
-| `mdReader.codeTheme` | `github-dark` | Syntax highlight theme for code blocks |
+| `mdReader.codeTheme` | `github-dark` | Syntax palette for code blocks: `github-dark` / `github-light` / `monokai` / `atom-one-dark` / `vs2015`. A theme that sets its own syntax colours overrides it; a palette whose light/dark polarity doesn't match the code block falls back to the matching GitHub palette. |
 | `mdReader.blueLightFilter` | `0` | Eye Care overlay opacity, 0–100 (0 = off) |
 | `mdReader.autoRefresh` | `true` | Refresh panel on save, and when the file changes outside VS Code |
 | `mdReader.scrollSync` | `false` | Two-way scroll sync with the editor |

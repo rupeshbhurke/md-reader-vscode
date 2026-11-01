@@ -1,14 +1,14 @@
 # MD Reader roadmap
 
-Last updated: 2026-11-02. This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
+Last updated: 2026-11-02 (Phase 1 complete, Phase 2 implemented). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
 
 ## Status
 
 | | |
 |---|---|
-| Latest release | `v0.2.1` |
-| In flight | `feat/custom-themes` — custom themes, export/import, 20 starter themes, version `0.3.0`. Pushed, not merged, not yet tested in a real editor |
-| Known defect | `mdReader.codeTheme` does nothing: no highlight.js stylesheet is loaded, so code blocks have no syntax colours. Fix is scheduled in Phase 2 |
+| Latest release | `v0.3.0` (2026-11-01) |
+| In flight | `feat/syntax-highlighting` — Phase 2, version `0.3.1`: syntax highlighting fix, syntax colours in themes. Implemented and checked in a browser harness; not yet tested in a real editor |
+| Known defect | none open. The code-block syntax-colour defect is fixed in `0.3.1` (pending merge and release) |
 | Not in place | tests, CI on pull requests, Open VSX publishing, verified Marketplace publisher |
 | Unresolved | F5 debugging crashed the extension host in Windsurf. It looked like a host problem, not this repo's code |
 
@@ -20,7 +20,7 @@ Last updated: 2026-11-02. This is a working plan, not a promise: scope and order
 
 ---
 
-## Phase 1 — Ship 0.3.0 as it stands
+## Phase 1 — Ship 0.3.0 as it stands — DONE (v0.3.0, 2026-11-01)
 
 No new code.
 
@@ -34,12 +34,12 @@ No new code.
 
 **Ships knowingly with:** no syntax colours in code blocks, and the light starter themes keeping dark code blocks as a workaround. This is existing behaviour, not a regression.
 
-## Phase 2 — 0.3.1: syntax highlighting (defect fix + format change)
+## Phase 2 — 0.3.1: syntax highlighting (defect fix + format change) — IMPLEMENTED, awaiting release
 
-- 2.1 Ship the five highlight.js stylesheets through `scripts/copy-vendor-assets.js` and wire up `mdReader.codeTheme`.
-- 2.2 Add about ten optional syntax tokens to the theme format (keyword, string, comment, number, title, type, variable, attr, meta, built-in). A theme that sets them wins; otherwise the stylesheet applies.
-- 2.3 Give all 20 starter themes matching syntax colours, and drop the dark-code-block workaround from the light ones.
-- 2.4 Extend the checks to cover the new tokens, including contrast of code text on code background.
+- 2.1 ~~Ship the five highlight.js stylesheets~~ Done differently: syntax colours are CSS variables in `reader.css` (five palettes selected by `mdReader.codeTheme`), because a shipped stylesheet cannot be overridden by theme colours without `!important`. No vendor stylesheet is needed.
+- 2.2 Done: add ten optional syntax tokens to the theme format (keyword, string, comment, number, title, type, variable, attr, meta, built-in). A theme that sets them wins; otherwise the stylesheet applies.
+- 2.3 Done: give all 20 starter themes matching syntax colours, and drop the dark-code-block workaround from the light ones.
+- 2.4 Done (as scripts; becomes real tests in Phase 3): extend the checks to cover the new tokens, including contrast of code text on code background.
 
 ## Phase 3 — Foundation (no user-visible change; rides along with any version)
 

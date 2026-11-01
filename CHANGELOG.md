@@ -6,6 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.3.1] — 2026-11-02
+
+### Fixed
+- Code blocks had no syntax colours: highlight.js markup was emitted but no stylesheet defined its classes, and `mdReader.codeTheme` was never read. Syntax highlighting now works, and `mdReader.codeTheme` selects one of five palettes (`github-dark`, `github-light`, `monokai`, `atom-one-dark`, `vs2015`).
+
+### Added
+- Themes can carry their own syntax colours: 10 new optional colours (keyword, string, comment, number, function name, type, variable, attribute, meta, built-in) in the theme editor and the theme file format. Themes saved or exported from 0.3.0 keep working unchanged.
+- All 20 starter themes now ship matching syntax colours, and the 7 light ones have light code blocks (they previously kept dark code blocks as a workaround).
+- HTML export carries the syntax palette.
+
+### Changed
+- If a syntax palette's light/dark polarity doesn't match the code block (for example `github-light` on a dark theme), the matching GitHub palette is used so code stays readable.
+
+---
+
 ## [0.3.0] — 2026-11-02
 
 ### Added
