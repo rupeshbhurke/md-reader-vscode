@@ -6,9 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased]
+## [0.4.0] — 2026-11-02
 
-### Changed (no user-visible change)
+### Added
+- **Open without an editor.** The reader no longer needs the Markdown file open in an editor tab. Right-click a `.md` file in the Explorer and choose **Open in MD Reader**; select several files to open them all; or run the command from the Command Palette and pick a file when no Markdown editor is active.
+- Each reader panel watches its own file, so external edits (another program, `git checkout`, a build script) refresh the panel even when no editor has the file open.
+
+### Changed
+- Closing the Markdown editor tab no longer closes the reader. A panel closes when you close it.
+- Clicking a task-list checkbox when the file is not open in an editor now saves the file straight away (previously the edit stayed as an invisible unsaved buffer). If the file is open in an editor, the edit follows your normal save workflow as before.
+- Several triggers for one save (file watcher + editor save event) are now coalesced into a single refresh.
+- Files with a UTF-8 byte-order mark render correctly (front matter is still detected).
+
+### Internal (no user-visible change)
 - Real automated tests (`npm test`, Node's built-in runner): theme validation and the export/import format, starter-theme contrast, highlight.js token styling, settings/command/manifest consistency, and version/CHANGELOG agreement.
 - CI on every pull request (type-check, test, build, package on Linux and Windows) with the `.vsix` attached as a downloadable artifact.
 - Release workflow now creates a draft GitHub release, publishes to the VS Code Marketplace and Open VSX when their tokens are configured, and only then publishes the release; hyphenated tags (`v0.4.0-beta.1`) are GitHub pre-releases only. See `docs/RELEASING.md`.
