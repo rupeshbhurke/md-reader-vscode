@@ -35,9 +35,7 @@ test('every ReaderConfig default is a package.json setting, and every other sett
 // Settings known to be declared but ignored. Each entry is a bug to fix (wire it up
 // or remove it) — tracked under "Known issues" in docs/roadmap/ROADMAP.md. The test
 // below fails if an entry here starts being used, so this list can only shrink.
-const KNOWN_UNUSED = {
-  showTOC: 'documented as "Enable table of contents" but the TOC works regardless',
-};
+const KNOWN_UNUSED = {};
 
 function unusedSettings() {
   const consumers = hostSources() + readText('src', 'webview', 'reader.js');

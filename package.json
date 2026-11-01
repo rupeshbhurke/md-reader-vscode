@@ -401,11 +401,6 @@
           ],
           "description": "Width of the reading column."
         },
-        "mdReader.showTOC": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show table of contents overlay when the TOC button is clicked."
-        },
         "mdReader.codeTheme": {
           "type": "string",
           "default": "github-dark",

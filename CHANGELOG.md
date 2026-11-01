@@ -14,6 +14,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Release workflow now creates a draft GitHub release, publishes to the VS Code Marketplace and Open VSX when their tokens are configured, and only then publishes the release; hyphenated tags (`v0.4.0-beta.1`) are GitHub pre-releases only. See `docs/RELEASING.md`.
 - `npm run compile` is now a pure type-check (`--noEmit`); it no longer overwrites the bundled `out/extension.js`.
 
+### Removed
+- `mdReader.showTOC`: the setting did nothing (it was declared and documented, but never read) and the table of contents always worked. A leftover `mdReader.showTOC` entry in your `settings.json` is harmless and can be deleted.
+
 ### Fixed
 - Highlight.js token classes for HTML tags, CSS selectors and Markdown inline code had no style rule and rendered uncoloured; found by the new tests.
 

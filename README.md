@@ -196,7 +196,6 @@ All settings are under `mdReader.*` in VS Code Settings (`Ctrl+,`):
 | `mdReader.fontSize` | `17` | Base font size in px (10–72) |
 | `mdReader.lineHeight` | `1.85` | Line spacing multiplier |
 | `mdReader.readingWidth` | `medium` | Reading column width |
-| `mdReader.showTOC` | `true` | Enable table of contents |
 | `mdReader.codeTheme` | `github-dark` | Syntax palette for code blocks: `github-dark` / `github-light` / `monokai` / `atom-one-dark` / `vs2015`. A theme that sets its own syntax colours overrides it; a palette whose light/dark polarity doesn't match the code block falls back to the matching GitHub palette. |
 | `mdReader.blueLightFilter` | `0` | Eye Care overlay opacity, 0–100 (0 = off) |
 | `mdReader.autoRefresh` | `true` | Refresh panel on save, and when the file changes outside VS Code |

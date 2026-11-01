@@ -8,7 +8,7 @@ Last updated: 2026-11-02 (Phases 1 and 2 released; Phase 3 implemented, awaiting
 |---|---|
 | Latest release | `v0.3.1` |
 | In flight | `chore/foundation-tests-ci` — Phase 3: test suite, CI, Open VSX and draft releases. No user-visible change, no release of its own |
-| Known issues | `mdReader.showTOC` is declared and documented but nothing reads it (the TOC works regardless) — found by the new tests, tracked in `KNOWN_UNUSED` in `test/project.test.js`. Decide: wire it up or remove it |
+| Known issues | none open. The dead `mdReader.showTOC` setting found by the Phase 3 tests has been removed (the TOC always works) |
 | Not in place | verified Marketplace publisher and the `VSCE_PAT` / `OVSX_PAT` secrets (maintainer — see `docs/RELEASING.md`) |
 | Unresolved | F5 debugging crashed the extension host in Windsurf. It looked like a host problem, not this repo's code |
 
