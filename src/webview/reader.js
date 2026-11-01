@@ -197,7 +197,14 @@
   let appliedThemeVars = [];
   // Editor working state. `dirty` = unsaved edits being live-previewed; while
   // dirty, config broadcasts (e.g. dragging the font slider) must not wipe them.
-  const editor = { id: null, label: '', base: 'light', colors: {}, dirty: false };
+  // `from` = starter id this theme tweaks: `colors` then holds only the changes.
+  const editor = { id: null, label: '', base: 'light', colors: {}, from: null, dirty: false };
+
+  // A tweaked starter's effective colours: the starter's, with the changes on top.
+  function effectiveColors(from, colors) {
+    const parent = from && starters[from];
+    return parent ? Object.assign({}, parent.colors, colors) : colors;
+  }
 
   // The definition behind a `custom:<id>` (user's, from settings) or
   // `starter:<id>` (a theme file bundled with the extension) theme value; null for built-ins.
@@ -213,7 +220,11 @@
     } else {
       return null;
     }
-    return theme ? { id: id, theme: theme, kind: kind } : null;
+    if (!theme) { return null; }
+    // `own` is what is stored; `theme` is what renders (a tweaked starter merged over its starter).
+    const parent = theme.from && starters[theme.from];
+    const resolved = parent ? Object.assign({}, theme, { base: parent.base, colors: effectiveColors(theme.from, theme.colors) }) : theme;
+    return { id: id, theme: resolved, own: theme, kind: kind };
   }
 
   function setThemeVars(colors) {
@@ -232,7 +243,7 @@
     const custom = customThemeFor(cfg);
     if (editor.dirty) {
       root.setAttribute('data-theme', editor.base);
-      setThemeVars(editor.colors);
+      setThemeVars(effectiveColors(editor.from, editor.colors));
     } else {
       root.setAttribute('data-theme', custom ? custom.theme.base : (cfg.theme || 'auto'));
       setThemeVars(custom ? custom.theme.colors || {} : {});
@@ -431,19 +442,21 @@
 
   // Load the editor from the persisted theme (not dirty).
   function loadEditorFrom(cfg, custom) {
-    // A starter theme is read-only: the editor starts as an unsaved copy of it
-    // (no id, so Save creates a new theme and Delete/Export stay disabled).
+    // A starter theme is read-only: the editor starts as an unsaved *tweak* of it
+    // (no id, so Save creates a new theme and Delete/Export stay disabled). It
+    // stores only the colours you change and keeps following the starter.
     const isUser = !!custom && custom.kind === 'custom';
     editor.id = isUser ? custom.id : null;
-    editor.label = custom ? (isUser ? custom.theme.label : (custom.theme.label + ' copy').slice(0, 40)) : '';
-    editor.colors = custom ? Object.assign({}, custom.theme.colors) : {};
+    editor.from = custom ? (isUser ? (custom.own.from && starters[custom.own.from] ? custom.own.from : null) : custom.id) : null;
+    editor.label = custom ? (isUser ? custom.theme.label : (custom.theme.label + ' (tweaked)').slice(0, 40)) : '';
+    editor.colors = custom ? Object.assign({}, isUser ? custom.own.colors : {}) : {};
     const t = (cfg.theme || 'auto');
     editor.base = custom ? custom.theme.base
       : (t === 'auto' ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : t);
     const name = document.getElementById('te-name');
     const base = document.getElementById('te-base');
     if (name) { name.value = editor.label; }
-    if (base) { base.value = editor.base; }
+    if (base) { base.value = editor.base; base.disabled = !!editor.from; }
     refreshEditorRows();
   }
 
@@ -475,6 +488,7 @@
         id: asNew ? undefined : (editor.id || undefined),
         label: name.value,
         base: base.value,
+        from: editor.from || undefined,
         colors: editor.colors
       });
       // The host saves + selects the theme, then broadcasts config; clearing

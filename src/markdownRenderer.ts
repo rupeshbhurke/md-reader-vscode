@@ -12,6 +12,8 @@ export interface RenderedDocument {
   toc: TocEntry[];
   /** True if the document contains at least one ```mermaid fenced block — tells the webview whether it needs to lazy-load mermaid.min.js. */
   hasMermaid: boolean;
+  /** True if the document contains a ```dot / ```graphviz block. Those are rendered to SVG on the extension host (see renderGraphviz), so this is informational only — the webview loads nothing extra. */
+  hasGraphviz: boolean;
   /** Word count of the readable text — code blocks, inline code, image/link syntax, and math are excluded (see countWords()). Reading time is derived from this in reader.js using the configurable mdReader.readingSpeed. */
   wordCount: number;
 }
@@ -48,6 +50,7 @@ export async function renderMarkdown(
   currentToc = [];
   slugger.reset();
   sawMermaid = false;
+  graphs = [];
   taskIndex = 0;
 
   const { body, frontMatter, raw } = extractFrontMatter(markdown);
@@ -62,9 +65,71 @@ export async function renderMarkdown(
   // frontMatterMode === 'hide' (or no front matter at all): toParse is
   // already just `body`, prefixHtml stays empty.
 
-  const html = prefixHtml + await marked.parse(toParse);
+  // marked parses synchronously, filling the module-level state; read it
+  // before the first await, because another panel's render may reset it.
+  const parsing = (toParse.includes('[^') ? marked : markedNoFootnotes).parse(toParse);
+  const sources = graphs;
+  const hasMermaid = sawMermaid;
+  const parsed = await parsing;
+  const html = prefixHtml + (sources.length ? await renderGraphviz(parsed, sources) : parsed);
 
-  return { html, toc: currentToc, hasMermaid: sawMermaid, wordCount: countWords(body) };
+  return { html, toc: currentToc, hasMermaid, hasGraphviz: sources.length > 0, wordCount: countWords(body) };
+}
+
+// ── Graphviz ─────────────────────────────────────────────────────────────────
+// ```dot / ```graphviz fences become SVG, rendered here (not in the webview) so
+// HTML export and PDF contain the diagram, no script is needed and the webview
+// CSP stays unchanged. The WebAssembly engine is loaded on first use only.
+
+let graphs: string[] = [];
+let vizReady: Promise<{ render(src: string, opts: { format: string }): { status: string; output?: string } }> | undefined;
+
+function graphPlaceholder(index: number): string {
+  return `<!--md-reader-graph-${index}-->`;
+}
+
+/**
+ * Makes Graphviz's SVG safe to inline: no XML prolog/comments, no links
+ * (a `URL=` attribute in the source would otherwise become an href) and no
+ * embedded images. Colours are mapped to the theme by reader.css.
+ */
+export function cleanGraphSvg(svg: string): string {
+  const start = svg.indexOf('<svg');
+  if (start < 0) { return ''; }
+  return svg.slice(start)
+    .replace(/<image[^>]*>(<\/image>)?/gi, '')
+    .replace(/\s(?:xlink:)?href="[^"]*"/gi, '');
+}
+
+async function renderGraphviz(html: string, sources: string[]): Promise<string> {
+  let engine: Awaited<NonNullable<typeof vizReady>> | undefined;
+  try {
+    vizReady ??= import('@viz-js/viz').then(m => m.instance()) as NonNullable<typeof vizReady>;
+    engine = await vizReady;
+  } catch (err) {
+    vizReady = undefined;
+    console.error('MD Reader: Graphviz engine failed to load', err);
+  }
+  let out = html;
+  sources.forEach((src, i) => {
+    let body = '';
+    let message = engine ? '' : 'Graphviz engine unavailable';
+    if (engine) {
+      try {
+        const r = engine.render(src, { format: 'svg' });
+        const errors = (r as { errors?: { message: string }[] }).errors;
+        if (r.status === 'success' && r.output) { body = cleanGraphSvg(r.output); }
+        else { message = errors?.[0]?.message ?? 'invalid diagram'; }
+      } catch (err) {
+        message = err instanceof Error ? err.message : 'invalid diagram';
+      }
+    }
+    const replacement = body
+      ? `<div class="graphviz">${body}</div>`
+      : `<pre class="graphviz graphviz-error" data-error="${escapeHtml(message)}">${escapeHtml(src)}</pre>`;
+    out = out.replace(graphPlaceholder(i), () => replacement);
+  });
+  return out;
 }
 
 // ── Front matter ─────────────────────────────────────────────────────────────
@@ -182,12 +247,16 @@ let sawMermaid = false;
 let taskIndex = 0;
 const slugger = new GithubSlugger();
 
-const marked = new Marked({
-  renderer: buildRenderer(),
-  gfm: true,
-  breaks: false,
-  extensions: [blockMathExtension(), inlineMathExtension()],
-});
+function createMarked(): Marked {
+  return new Marked({
+    renderer: buildRenderer(),
+    gfm: true,
+    breaks: false,
+    extensions: [blockMathExtension(), inlineMathExtension()],
+  });
+}
+
+const marked = createMarked();
 
 // GFM footnotes (`[^1]` ... `[^1]: text`). markedFootnote() returns a full
 // MarkedExtension (its own tokenizers/renderer), not a single
@@ -195,6 +264,12 @@ const marked = new Marked({
 // folded into the `extensions:` array above — still called exactly once at
 // module load, same rule as everything else here.
 marked.use(markedFootnote({ footnoteDivider: true }));
+
+// marked-footnote makes parsing quadratic in document length (measured: 4x the
+// paragraphs takes ~20x as long; plain marked is linear). A document with no
+// `[^` cannot contain a footnote, so it is parsed by a second instance without
+// the extension — configured once here, never re-configured per call.
+const markedNoFootnotes = createMarked();
 
 // ── Renderer ──────────────────────────────────────────────────────────────────
 
@@ -240,6 +315,12 @@ function buildRenderer() {
     if (lang === 'mermaid') {
       sawMermaid = true;
       return `<pre class="mermaid">${escapeHtml(code)}</pre>`;
+    }
+
+    // ```dot / ```graphviz: queued here, swapped for SVG after parsing.
+    if (lang === 'dot' || lang === 'graphviz') {
+      graphs.push(code);
+      return graphPlaceholder(graphs.length - 1);
     }
 
     let highlighted: string;

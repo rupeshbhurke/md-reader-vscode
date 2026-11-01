@@ -24,6 +24,7 @@ That command-palette list and the in-panel `?` overlay are the two fastest ways 
 - ⌨️ **Full reading-mode keyboard map** — see [Keyboard Shortcuts](#keyboard-shortcuts) below, or press `?` in the panel.
 - 💻 **Syntax highlighting** — Code blocks with language labels and one-click copy-to-clipboard, in five palettes (`mdReader.codeTheme`); themes can carry their own syntax colours.
 - 📈 **Mermaid diagrams** — ` ```mermaid ` fenced code blocks render as diagrams (lazy-loaded, so documents without one pay no cost).
+- 🕸️ **Graphviz diagrams** — ` ```dot ` / ` ```graphviz ` blocks render as SVG that follows your theme, and appear in HTML export and PDF with no internet needed.
 - 🧮 **Math (KaTeX)** — `$inline$` and `$$block$$` math, rendered server-side.
 - 📝 **GFM footnotes** — `[^1]` reference / `[^1]: definition` syntax, with back-reference links.
 - 🗂️ **YAML front matter** — a leading `---` block renders as a metadata card (title/author/date/tags/...), or can be hidden or shown as a raw code block (`mdReader.frontMatter`).
@@ -96,7 +97,7 @@ Besides Auto, Light, Dark and Sepia you can create your own colour themes.
 
 MD Reader ships 20 ready-made themes, grouped by category (**Starter — Light**, **Starter — Dark**, **Starter — Accessible**) in the Theme dropdown: Solarized Light/Dark, Nord, Dracula, Gruvbox Light/Dark, One Dark, Monokai, Tokyo Night, Catppuccin Latte/Mocha, Rosé Pine and Dawn, GitHub Light/Dark, Ayu Light, Night Owl, Paper, Forest and High Contrast. Text, link, code and syntax colours in every one meet WCAG AA contrast, and body text meets AAA. Each carries its own matching syntax colours, and the light ones have light code blocks.
 
-Starter themes are plain theme files in the extension's [`themes/`](themes) folder, in exactly the same format Export writes and Import reads. They are read-only: pick one and press **Save as new** to get your own editable copy, or press **Add starter themes** (or run **MD Reader: Add Starter Themes to My Themes…**) to copy them all into **My themes**.
+Starter themes are plain theme files in the extension's [`themes/`](themes) folder, in exactly the same format Export writes and Import reads. They are read-only, but you can **tweak** one without copying it: pick a starter, change the colours you want and press **Save as new**. Only your changes are saved, and the theme keeps following the starter (its other colours, and its light/dark base). Exporting such a theme writes the full colours, so the file works anywhere. Or press **Add starter themes** (or run **MD Reader: Add Starter Themes to My Themes…**) to copy them all into **My themes**.
 
 **Contribute a theme:** export one of your own, or write a `*.mdtheme.json` file (the format is documented in [docs/THEME-FORMAT.md](docs/THEME-FORMAT.md)), and open a pull request adding it to `themes/`. Set `"author"` to credit yourself.
 
@@ -145,6 +146,18 @@ The font family picker is grouped by type:
 | Wider | 1100px | Large monitors |
 | Ultra | 1400px | Maximum fixed column |
 | Full | 100% | Edge-to-edge, no side margins |
+
+## Graphviz Diagrams
+
+Use a fenced code block tagged `dot` (or `graphviz`):
+
+````markdown
+```dot
+digraph { rankdir=LR; Draft -> Review -> Published; Review -> Draft [label="changes"]; }
+```
+````
+
+Diagrams are drawn by a bundled Graphviz engine, so they need no internet connection and work in HTML and PDF export. Black and white in a diagram are mapped onto your theme, so it stays readable in dark themes; colours a diagram sets itself are kept. Links and embedded images in a diagram are removed. If the source doesn't parse, it is shown as text with the error underneath.
 
 ## Mermaid Diagrams
 

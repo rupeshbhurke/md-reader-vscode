@@ -32,4 +32,5 @@ module.exports = {
   textDecode: () => require('../out/test-build/textDecode.js'),
   layouts: () => require('../out/test-build/layouts.js'),
   layoutLoader: () => require('../out/test-build/layoutLoader.js'),
+  renderer: () => require('../out/test-build/markdownRenderer.js'),
 };

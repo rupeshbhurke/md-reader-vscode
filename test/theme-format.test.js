@@ -136,3 +136,38 @@ test('starter categories match their base: Light / Dark, plus Accessible for hig
     assert.equal(raw.category, expected, `${f}: category`);
   }
 });
+
+// ── tweaking a starter (`from`) ───────────────────────────────────────────────
+
+const starters = { nord: { label: 'Nord', base: 'dark', colors: { bg: '#2e3440', text: '#e5e9f0', accent: '#88c0d0' } } };
+
+test('a theme with `from` keeps it; an invalid `from` is dropped', () => {
+  assert.equal(t.sanitizeTheme({ label: 'x', base: 'light', colors: {}, from: 'nord' }).from, 'nord');
+  for (const bad of ['Nord', '../x', 'a b', '', 5, null, 'x'.repeat(41)]) {
+    assert.ok(!('from' in t.sanitizeTheme({ label: 'x', base: 'light', colors: {}, from: bad })), String(bad));
+  }
+});
+
+test('resolveTheme layers the changes over the starter, and takes the starter base', () => {
+  const r = t.resolveTheme({ label: 'Mine', base: 'light', from: 'nord', colors: { accent: '#ff0000' } }, starters);
+  assert.equal(r.base, 'dark');
+  assert.deepEqual(r.colors, { bg: '#2e3440', text: '#e5e9f0', accent: '#ff0000' });
+});
+
+test('resolveTheme leaves a theme alone when it has no `from`, or its starter is gone', () => {
+  const plain = { label: 'P', base: 'sepia', colors: { bg: '#fff' } };
+  assert.equal(t.resolveTheme(plain, starters), plain);
+  const orphan = { label: 'O', base: 'light', from: 'deleted', colors: { bg: '#fff' } };
+  assert.equal(t.resolveTheme(orphan, starters), orphan);
+});
+
+test('a tweaked starter follows the starter: lookup, base and export CSS all use the merged theme', () => {
+  const custom = { mine: { label: 'Mine', base: 'light', from: 'nord', colors: { accent: '#ff0000' } } };
+  assert.equal(t.effectiveBase('custom:mine', custom, starters), 'dark');
+  const css = t.themeCss('custom:mine', custom, starters);
+  assert.match(css, /#2e3440/);   // inherited from the starter
+  assert.match(css, /#ff0000/);   // the tweak
+  // the starter improves later: the tweak picks it up
+  const improved = { nord: { ...starters.nord, colors: { ...starters.nord.colors, bg: '#111111' } } };
+  assert.match(t.themeCss('custom:mine', custom, improved), /#111111/);
+});

@@ -6,6 +6,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.6.0] — 2026-11-02
+
+### Added
+- **Graphviz diagrams**: ` ```dot ` and ` ```graphviz ` blocks render as SVG, drawn by a bundled engine (no internet needed). The diagram follows your theme, appears in HTML export and PDF, and an invalid diagram shows its source with the error. Links and images inside a diagram are stripped.
+- **Tweak a starter theme without copying it**: editing a starter and pressing Save as new now stores only your changes plus a reference to the starter (`from` in `mdReader.customThemes`), so the theme keeps following the starter's other colours and its base. Exporting writes the full colours.
+
+### Changed
+- The Content Security policy is unchanged; the extension package grows by about 1.4 MB for the Graphviz engine, which loads only when a document has a diagram.
+
+### Fixed
+- **Large documents rendered very slowly** on the extension host: the footnote extension made parsing quadratic, so a 1.7 MB document took about 66 seconds. Documents without footnotes now skip it and render in about 0.6 seconds. (A document that does use footnotes is still slower.)
+
+---
+
 ## [0.5.0] — 2026-11-02
 
 ### Added

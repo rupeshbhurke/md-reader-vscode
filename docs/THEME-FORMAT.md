@@ -42,6 +42,7 @@ Every value is validated when a file is read. Anything invalid (unknown key, wro
 | `author` | no | Credit, up to 60 characters. Kept through export and import. |
 | `version` | no | The theme's own revision, e.g. `1.2.0`, so a shipped theme can be improved over time. |
 | `colors` | yes | Any subset of the colours below. |
+| `from` | no | *Saved themes only* (in `mdReader.customThemes`, not in files you write or export): the id of a starter theme this one tweaks. `colors` then holds only your changes and everything else, including `base`, follows the starter. Export writes the resolved colours and omits `from`. |
 
 ### Colours
 
