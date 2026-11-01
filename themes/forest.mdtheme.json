@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "forest",
+  "label": "Forest",
+  "base": "dark",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#1a2420",
+    "bgAlt": "#223029",
+    "surface": "#1f2c26",
+    "border": "#34493f",
+    "text": "#dbe7de",
+    "textMuted": "#9db3a6",
+    "accent": "#8fcf9a",
+    "selection": "#2f4a3c",
+    "codeBg": "#26352d",
+    "codeText": "#e6b873",
+    "preBg": "#121a16",
+    "preText": "#dbe7de",
+    "quoteBg": "#202e27",
+    "tableStripe": "#1d2822"
+  }
+}

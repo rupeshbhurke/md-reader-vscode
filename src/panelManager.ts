@@ -113,6 +113,7 @@ export class PanelManager {
         if (msg.id === 'exportTheme' && typeof msg.themeId === 'string') { await this.themes.exportThemes([msg.themeId]); }
         else if (msg.id === 'exportThemes') { await this.themes.exportThemes(); }
         else if (msg.id === 'importThemes') { await this.themes.importThemes(); }
+        else if (msg.id === 'addStarterThemes') { await this.themes.addStarters(); }
       } else if (msg.type === 'toggleTask') {
         await this.toggleTask(document, msg.index, msg.checked);
       } else if (msg.type === 'openLink') {
@@ -190,7 +191,7 @@ export class PanelManager {
 
     const cfg = this.config.get();
     // A custom theme exports as its base theme + a :root override block.
-    const exportDataTheme = effectiveBase(cfg.theme, cfg.customThemes);
+    const exportDataTheme = effectiveBase(cfg.theme, cfg.customThemes, this.config.starters);
     const { html, hasMermaid } = await renderMarkdown(document.getText(), cfg.frontMatter);
     const embedImages = vscode.workspace.getConfiguration('mdReader')
       .get<boolean>('export.embedImages', true);
@@ -212,7 +213,7 @@ export class PanelManager {
     // still renders as valid HTML, just without KaTeX's custom glyphs.
     const mermaidScript = hasMermaid
       ? `<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <script>mermaid.initialize({ startOnLoad: true, theme: ${JSON.stringify(effectiveBase(cfg.theme, cfg.customThemes) === 'dark' ? 'dark' : 'default')} });</script>`
+  <script>mermaid.initialize({ startOnLoad: true, theme: ${JSON.stringify(effectiveBase(cfg.theme, cfg.customThemes, this.config.starters) === 'dark' ? 'dark' : 'default')} });</script>`
       : '';
 
     const standalone = `<!DOCTYPE html>
@@ -222,7 +223,7 @@ export class PanelManager {
 <title>${escapeHtml(path.basename(document.fileName))}</title>
 <style>${readerCss}</style>
 <style>${katexCss}</style>
-<style>${themeCss(cfg.theme, cfg.customThemes)}</style>
+<style>${themeCss(cfg.theme, cfg.customThemes, this.config.starters)}</style>
 </head>
 <body>
 <main id="reader-main"><article id="reader-content">${content}</article></main>
@@ -337,7 +338,7 @@ ${mermaidScript}
     const cfg = this.config.get();
     const { html, toc, hasMermaid, wordCount } = await renderMarkdown(document.getText(), cfg.frontMatter);
     panel.webview.postMessage({
-      type: 'update', html, toc, hasMermaid, wordCount, config: cfg, themeTokens: THEME_TOKENS,
+      type: 'update', html, toc, hasMermaid, wordCount, config: cfg, themeTokens: THEME_TOKENS, starters: this.config.starters,
       fileName: path.basename(document.fileName),
     });
   }
@@ -499,6 +500,7 @@ ${mermaidScript}
             <button type="button" id="te-export" title="Export the selected custom theme to a .json file">Export</button>
             <button type="button" id="te-export-all" title="Export every custom theme to one .json file">Export all</button>
             <button type="button" id="te-import" title="Import theme .json files">Import…</button>
+            <button type="button" id="te-add-starters" title="Copy all starter themes into My themes so you can edit them">Add starter themes</button>
           </div>
           <p class="te-hint">Themes are saved in your VS Code user settings, so they survive extension updates.</p>
         </div>

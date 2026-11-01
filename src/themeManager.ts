@@ -113,6 +113,24 @@ export class ThemeManager {
       }
     }
 
+    await this.merge(incoming, problems);
+  }
+
+  /** Copy every starter theme into the user's own themes (editable, deletable). */
+  async addStarters(): Promise<void> {
+    const entries: ThemeFileEntry[] = Object.entries(this.config.starters).map(([id, t]) => ({ id, ...t }));
+    if (entries.length === 0) {
+      vscode.window.showInformationMessage('MD Reader: no starter themes were found.');
+      return;
+    }
+    await this.merge(entries, []);
+  }
+
+  /**
+   * Adds `incoming` to the saved themes. One Replace / Keep both / Skip choice
+   * covers every id conflict, so a bulk add isn't a string of prompts.
+   */
+  private async merge(incoming: ThemeFileEntry[], problems: string[]): Promise<void> {
     const themes = this.config.getSavedThemes();
     const conflicts = incoming.filter(t => themes[t.id]);
     // One decision for every conflict, so a bulk import isn't a string of prompts.

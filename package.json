@@ -108,6 +108,11 @@
         "category": "MD Reader"
       },
       {
+        "command": "mdReader.addStarterThemes",
+        "title": "Add Starter Themes to My Themes...",
+        "category": "MD Reader"
+      },
+      {
         "command": "mdReader.deleteAllThemes",
         "title": "Delete All Custom Themes...",
         "category": "MD Reader"
@@ -194,11 +199,11 @@
             },
             {
               "type": "string",
-              "pattern": "^custom:[a-z0-9][a-z0-9-]{0,39}$",
-              "description": "A custom theme, as custom:<id>."
+              "pattern": "^(custom|starter):[a-z0-9][a-z0-9-]{0,39}$",
+              "description": "One of your own themes (custom:<id>) or a bundled starter theme (starter:<id>)."
             }
           ],
-          "description": "Color theme for the reader panel: a built-in theme, or custom:<id> for one you created (see mdReader.customThemes). An unknown or deleted custom theme falls back to Auto."
+          "description": "Color theme for the reader panel: a built-in theme, custom:<id> for one you created (see mdReader.customThemes), or starter:<id> for a bundled starter theme. An unknown or deleted theme falls back to Auto."
         },
         "mdReader.customThemes": {
           "type": "object",
@@ -214,6 +219,10 @@
               "label": {
                 "type": "string",
                 "maxLength": 40
+              },
+              "author": {
+                "type": "string",
+                "maxLength": 60
               },
               "base": {
                 "type": "string",

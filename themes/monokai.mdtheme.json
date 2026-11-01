@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "monokai",
+  "label": "Monokai",
+  "base": "dark",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#272822",
+    "bgAlt": "#2f302a",
+    "surface": "#2d2e27",
+    "border": "#49483e",
+    "text": "#f8f8f2",
+    "textMuted": "#b0ad9a",
+    "accent": "#66d9ef",
+    "selection": "#49483e",
+    "codeBg": "#3e3d32",
+    "codeText": "#ff7ca4",
+    "preBg": "#1e1f1c",
+    "preText": "#f8f8f2",
+    "quoteBg": "#2f302a",
+    "tableStripe": "#2b2c25"
+  }
+}

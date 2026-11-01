@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "nord",
+  "label": "Nord",
+  "base": "dark",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#2e3440",
+    "bgAlt": "#3b4252",
+    "surface": "#353c4a",
+    "border": "#4c566a",
+    "text": "#e5e9f0",
+    "textMuted": "#aab3c5",
+    "accent": "#88c0d0",
+    "selection": "#434c5e",
+    "codeBg": "#3b4252",
+    "codeText": "#ebcb8b",
+    "preBg": "#242933",
+    "preText": "#d8dee9",
+    "quoteBg": "#333a47",
+    "tableStripe": "#323946"
+  }
+}

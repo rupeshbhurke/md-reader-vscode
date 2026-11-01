@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "catppuccin-mocha",
+  "label": "Catppuccin Mocha",
+  "base": "dark",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#1e1e2e",
+    "bgAlt": "#262637",
+    "surface": "#2a2b3c",
+    "border": "#45475a",
+    "text": "#cdd6f4",
+    "textMuted": "#a6adc8",
+    "accent": "#89b4fa",
+    "selection": "#45475a",
+    "codeBg": "#313244",
+    "codeText": "#f38ba8",
+    "preBg": "#11111b",
+    "preText": "#cdd6f4",
+    "quoteBg": "#262637",
+    "tableStripe": "#232334"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "catppuccin-latte",
+  "label": "Catppuccin Latte",
+  "base": "light",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#eff1f5",
+    "bgAlt": "#e6e9ef",
+    "surface": "#f5f6f9",
+    "border": "#ccd0da",
+    "text": "#4c4f69",
+    "textMuted": "#5c5f77",
+    "accent": "#1a56d0",
+    "selection": "#ccd0da",
+    "codeBg": "#e6e9ef",
+    "codeText": "#c00d32",
+    "preBg": "#1e1e2e",
+    "preText": "#cdd6f4",
+    "quoteBg": "#e9ecf2",
+    "tableStripe": "#eaedf2"
+  }
+}

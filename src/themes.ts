@@ -45,12 +45,16 @@ export interface CustomTheme {
   label: string;
   base: ThemeBase;
   colors: Record<string, string>;
+  /** Optional credit, kept through export/import. */
+  author?: string;
 }
 export type CustomThemes = Record<string, CustomTheme>;
 
 export const CUSTOM_PREFIX = 'custom:';
+export const STARTER_PREFIX = 'starter:';
 export const MAX_THEMES = 50;
 export const MAX_LABEL = 40;
+export const MAX_AUTHOR = 60;
 const ID_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
 
 // Hex or rgb()/hsl() with only digits, separators and units. Deliberately
@@ -93,7 +97,8 @@ export function sanitizeTheme(raw: unknown, fallbackLabel = 'Theme'): CustomThem
       if (TOKEN_KEYS.has(k) && isValidColor(v)) { colors[k] = v; }
     }
   }
-  return { label, base, colors };
+  const author = typeof r.author === 'string' ? r.author.trim().slice(0, MAX_AUTHOR) : '';
+  return author ? { label, base, colors, author } : { label, base, colors };
 }
 
 /** Sanitises a stored map; invalid entries are dropped, never thrown on. */
@@ -109,27 +114,38 @@ export function sanitizeThemes(raw: unknown): CustomThemes {
   return out;
 }
 
+/**
+ * The theme definition behind a `custom:<id>` or `starter:<id>` value, if any.
+ * Custom themes come from the user's settings; starter themes are theme files
+ * shipped in the extension's `themes/` folder (same format as an export) and
+ * are read-only until added to the user's own themes.
+ */
+export function lookupTheme(theme: string, custom: CustomThemes, starters: CustomThemes): CustomTheme | undefined {
+  if (theme.startsWith(CUSTOM_PREFIX)) { return custom[theme.slice(CUSTOM_PREFIX.length)]; }
+  if (theme.startsWith(STARTER_PREFIX)) { return starters[theme.slice(STARTER_PREFIX.length)]; }
+  return undefined;
+}
+
 /** The built-in theme a `theme` setting value ultimately renders on. */
-export function effectiveBase(theme: string, themes: CustomThemes): string {
-  if (theme.startsWith(CUSTOM_PREFIX)) {
-    return themes[theme.slice(CUSTOM_PREFIX.length)]?.base ?? 'auto';
+export function effectiveBase(theme: string, custom: CustomThemes, starters: CustomThemes): string {
+  if (theme.startsWith(CUSTOM_PREFIX) || theme.startsWith(STARTER_PREFIX)) {
+    return lookupTheme(theme, custom, starters)?.base ?? 'auto';
   }
   return theme;
 }
 
-/** A `theme` value that points at a deleted/unknown custom theme → 'auto'. */
-export function resolveThemeValue(theme: unknown, themes: CustomThemes): string {
+/** A `custom:`/`starter:` value pointing at a deleted/unknown theme -> 'auto'. */
+export function resolveThemeValue(theme: unknown, custom: CustomThemes, starters: CustomThemes): string {
   if (typeof theme !== 'string') { return 'auto'; }
-  if (theme.startsWith(CUSTOM_PREFIX)) {
-    return themes[theme.slice(CUSTOM_PREFIX.length)] ? theme : 'auto';
+  if (theme.startsWith(CUSTOM_PREFIX) || theme.startsWith(STARTER_PREFIX)) {
+    return lookupTheme(theme, custom, starters) ? theme : 'auto';
   }
   return theme;
 }
 
 /** CSS rule overriding the base theme's variables, for standalone HTML export. */
-export function themeCss(theme: string, themes: CustomThemes): string {
-  if (!theme.startsWith(CUSTOM_PREFIX)) { return ''; }
-  const t = themes[theme.slice(CUSTOM_PREFIX.length)];
+export function themeCss(theme: string, custom: CustomThemes, starters: CustomThemes): string {
+  const t = lookupTheme(theme, custom, starters);
   if (!t) { return ''; }
   const decls: string[] = [];
   for (const token of THEME_TOKENS) {

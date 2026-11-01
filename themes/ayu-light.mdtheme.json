@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "ayu-light",
+  "label": "Ayu Light",
+  "base": "light",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#fafafa",
+    "bgAlt": "#f0f0ef",
+    "surface": "#ffffff",
+    "border": "#e0e0dc",
+    "text": "#4a5057",
+    "textMuted": "#6b7279",
+    "accent": "#0b6c9c",
+    "selection": "#d6e6f5",
+    "codeBg": "#efefec",
+    "codeText": "#a2450b",
+    "preBg": "#1f2430",
+    "preText": "#cccac2",
+    "quoteBg": "#f3f4f4",
+    "tableStripe": "#f5f5f4"
+  }
+}

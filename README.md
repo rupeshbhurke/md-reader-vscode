@@ -92,6 +92,16 @@ Besides Auto, Light, Dark and Sepia you can create your own colour themes.
 
 **Export and import:** the **Export**, **Export all** and **Import…** buttons in the same panel (or the commands **MD Reader: Export Themes…** / **Import Themes…**) write and read `.json` theme files. Use them to back up your themes, move them to another machine, or share them. When an imported theme has the same id as one you already have, you choose once to **Replace**, **Keep both** or **Skip** for all of them.
 
+### Starter themes
+
+MD Reader ships 20 ready-made themes under **Starter themes** in the Theme dropdown: Solarized Light/Dark, Nord, Dracula, Gruvbox Light/Dark, One Dark, Monokai, Tokyo Night, Catppuccin Latte/Mocha, Rosé Pine and Dawn, GitHub Light/Dark, Ayu Light, Night Owl, Paper, Forest and High Contrast. Text, link and code colours in every one meet WCAG AA contrast, and body text meets AAA.
+
+Starter themes are plain theme files in the extension's [`themes/`](themes) folder, in exactly the same format Export writes and Import reads. They are read-only: pick one and press **Save as new** to get your own editable copy, or press **Add starter themes** (or run **MD Reader: Add Starter Themes to My Themes…**) to copy them all into **My themes**.
+
+**Contribute a theme:** export one of your own, or write a `*.mdtheme.json` file (see any file in `themes/` for the format), and open a pull request adding it to `themes/`. Set `"author"` to credit yourself.
+
+The palettes are adapted from, and inspired by, these open-source colour schemes: [Solarized](https://ethanschoonover.com/solarized/) (Ethan Schoonover), [Nord](https://www.nordtheme.com/) (Arctic Ice Studio), [Dracula](https://draculatheme.com/) (Zeno Rocha), [Gruvbox](https://github.com/morhetz/gruvbox) (Pavel Pertsev), [One Dark](https://github.com/atom/one-dark-syntax) (Atom), Monokai (Wimer Hazenberg), [Tokyo Night](https://github.com/enkia/tokyo-night-vscode-theme) (enkia), [Catppuccin](https://catppuccin.com/), [Rosé Pine](https://rosepinetheme.com/), GitHub's Primer colours, [Ayu](https://github.com/ayu-theme/ayu-colors) and [Night Owl](https://github.com/sdras/night-owl-vscode-theme) (Sarah Drasner). Paper, Forest and High Contrast are original. The colour values here are adaptations tuned for reading, not exact copies.
+
 ### Your themes and updates
 
 Custom themes are saved in your VS Code **user settings** (`mdReader.customThemes`), not inside the extension. That means:
@@ -180,7 +190,7 @@ All settings are under `mdReader.*` in VS Code Settings (`Ctrl+,`):
 
 | Setting | Default | Description |
 |---|---|---|
-| `mdReader.theme` | `auto` | Color theme: `auto` / `light` / `dark` / `sepia`, or `custom:<id>` for one of your own |
+| `mdReader.theme` | `auto` | Color theme: `auto` / `light` / `dark` / `sepia`, or `custom:<id>` for one of your own, or `starter:<id>` for a bundled starter theme |
 | `mdReader.customThemes` | `{}` | Your saved custom themes (normally edited from the settings drawer; see [Custom Themes](#custom-themes)) |
 | `mdReader.fontFamily` | `Georgia, 'Times New Roman', serif` | Body font family |
 | `mdReader.fontSize` | `17` | Base font size in px (10–72) |
@@ -216,6 +226,7 @@ Every command below is reachable via `Ctrl+Shift+P` under the **MD Reader** cate
 | Show Keyboard Shortcuts | Toolbar `$(question)`, `?` |
 | Export Themes... | Drawer → Customize theme → **Export all** |
 | Import Themes... | Drawer → Customize theme → **Import…** |
+| Add Starter Themes to My Themes... | Drawer → Customize theme → **Add starter themes** |
 | Delete All Custom Themes... | — (run before uninstalling to clear your themes) |
 
 ## Context Menus

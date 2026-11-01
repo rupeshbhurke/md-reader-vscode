@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "dracula",
+  "label": "Dracula",
+  "base": "dark",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#282a36",
+    "bgAlt": "#343746",
+    "surface": "#2d303e",
+    "border": "#44475a",
+    "text": "#f8f8f2",
+    "textMuted": "#9aa5ce",
+    "accent": "#bd93f9",
+    "selection": "#44475a",
+    "codeBg": "#343746",
+    "codeText": "#ff79c6",
+    "preBg": "#1e1f29",
+    "preText": "#f8f8f2",
+    "quoteBg": "#2f3240",
+    "tableStripe": "#2e303c"
+  }
+}

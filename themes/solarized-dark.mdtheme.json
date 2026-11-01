@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "solarized-dark",
+  "label": "Solarized Dark",
+  "base": "dark",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#002b36",
+    "bgAlt": "#073642",
+    "surface": "#05333f",
+    "border": "#17505c",
+    "text": "#b0bfc0",
+    "textMuted": "#96a8aa",
+    "accent": "#4aa3df",
+    "selection": "#0d4a5a",
+    "codeBg": "#073642",
+    "codeText": "#f07fae",
+    "preBg": "#00212b",
+    "preText": "#b0bfc0",
+    "quoteBg": "#04323d",
+    "tableStripe": "#04303a"
+  }
+}

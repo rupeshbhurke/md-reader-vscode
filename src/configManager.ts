@@ -59,6 +59,9 @@ const DEFAULTS: ReaderConfig = {
 };
 
 export class ConfigManager {
+  /** Starter themes loaded from the extension's `themes/` folder at activation (read-only). */
+  starters: CustomThemes = {};
+
   get(): ReaderConfig {
     const cfg = vscode.workspace.getConfiguration('mdReader');
     const result = {} as ReaderConfig;
@@ -68,7 +71,7 @@ export class ConfigManager {
     // Themes come from user-editable settings.json: never trust the shape,
     // and a `theme` pointing at a deleted custom theme falls back to auto.
     result.customThemes = sanitizeThemes(result.customThemes);
-    result.theme = resolveThemeValue(result.theme, result.customThemes);
+    result.theme = resolveThemeValue(result.theme, result.customThemes, this.starters);
     return result;
   }
 

@@ -1,0 +1,23 @@
+{
+  "mdReaderTheme": 1,
+  "id": "gruvbox-light",
+  "label": "Gruvbox Light",
+  "base": "light",
+  "author": "MD Reader starter pack",
+  "colors": {
+    "bg": "#fbf1c7",
+    "bgAlt": "#f2e5bc",
+    "surface": "#f7ecbd",
+    "border": "#d5c4a1",
+    "text": "#3c3836",
+    "textMuted": "#665c54",
+    "accent": "#076678",
+    "selection": "#d5c4a1",
+    "codeBg": "#f2e5bc",
+    "codeText": "#9d0006",
+    "preBg": "#282828",
+    "preText": "#ebdbb2",
+    "quoteBg": "#f2e5bc",
+    "tableStripe": "#f5e9b9"
+  }
+}

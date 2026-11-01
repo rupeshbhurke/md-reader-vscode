@@ -43,6 +43,7 @@
   let tocOpen = false;
   let currentConfig = {};
   let themeTokens = [];          // [{key,label,group,vars}] - sent by the host with each 'update'
+  let starters = {};             // starter themes shipped in themes/ {id: {label,base,colors}} - same
   let currentFileName = '';
   let currentWordCount = 0;
   let headingElements = [];
@@ -87,6 +88,7 @@
     const msg = event.data;
     switch (msg.type) {
       case 'update':
+        if (msg.starters) { starters = msg.starters; }
         if (msg.themeTokens) { themeTokens = msg.themeTokens; buildThemeEditorRows(); }
         currentConfig = msg.config || {};
         currentFileName = msg.fileName || '';
@@ -193,12 +195,21 @@
   // dirty, config broadcasts (e.g. dragging the font slider) must not wipe them.
   const editor = { id: null, label: '', base: 'light', colors: {}, dirty: false };
 
+  // The definition behind a `custom:<id>` (user's, from settings) or
+  // `starter:<id>` (a theme file bundled with the extension) theme value; null for built-ins.
   function customThemeFor(cfg) {
     const t = (cfg && cfg.theme) || '';
-    if (t.indexOf('custom:') !== 0) { return null; }
-    const id = t.slice(7);
-    const theme = cfg.customThemes && cfg.customThemes[id];
-    return theme ? { id: id, theme: theme } : null;
+    let kind, id, theme;
+    if (t.indexOf('custom:') === 0) {
+      kind = 'custom'; id = t.slice(7);
+      theme = cfg.customThemes && cfg.customThemes[id];
+    } else if (t.indexOf('starter:') === 0) {
+      kind = 'starter'; id = t.slice(8);   // 'starter:'.length
+      theme = starters[id];
+    } else {
+      return null;
+    }
+    return theme ? { id: id, theme: theme, kind: kind } : null;
   }
 
   function setThemeVars(colors) {
@@ -230,21 +241,26 @@
     const sel = document.getElementById('set-theme');
     if (!sel) { return; }
     const ids = Object.keys(cfg.customThemes || {});
-    const signature = ids.map(function (id) { return id + ':' + cfg.customThemes[id].label; }).join('|');
+    const starterIds = Object.keys(starters);
+    const signature = ids.map(function (id) { return id + ':' + cfg.customThemes[id].label; }).join('|')
+      + '#' + starterIds.join(',');
     if (sel.dataset.sig === signature) { return; }
     sel.dataset.sig = signature;
     Array.prototype.slice.call(sel.querySelectorAll('optgroup')).forEach(function (g) { g.remove(); });
-    if (ids.length) {
+    const addGroup = function (title, prefix, defs, keys) {
+      if (!keys.length) { return; }
       const group = document.createElement('optgroup');
-      group.label = 'My themes';
-      ids.forEach(function (id) {
+      group.label = title;
+      keys.forEach(function (id) {
         const o = document.createElement('option');
-        o.value = 'custom:' + id;
-        o.textContent = cfg.customThemes[id].label;   // textContent: labels are user data
+        o.value = prefix + id;
+        o.textContent = defs[id].label;   // textContent: custom labels are user data
         group.appendChild(o);
       });
       sel.appendChild(group);
-    }
+    };
+    addGroup('My themes', 'custom:', cfg.customThemes || {}, ids);
+    addGroup('Starter themes', 'starter:', starters, starterIds);
   }
 
   function readVar(name) {
@@ -329,8 +345,11 @@
 
   // Load the editor from the persisted theme (not dirty).
   function loadEditorFrom(cfg, custom) {
-    editor.id = custom ? custom.id : null;
-    editor.label = custom ? custom.theme.label : '';
+    // A starter theme is read-only: the editor starts as an unsaved copy of it
+    // (no id, so Save creates a new theme and Delete/Export stay disabled).
+    const isUser = !!custom && custom.kind === 'custom';
+    editor.id = isUser ? custom.id : null;
+    editor.label = custom ? (isUser ? custom.theme.label : (custom.theme.label + ' copy').slice(0, 40)) : '';
     editor.colors = custom ? Object.assign({}, custom.theme.colors) : {};
     const t = (cfg.theme || 'auto');
     editor.base = custom ? custom.theme.base
@@ -393,6 +412,9 @@
     });
     byId('te-import').addEventListener('click', function () {
       vscode.postMessage({ type: 'themeCommand', id: 'importThemes' });
+    });
+    byId('te-add-starters').addEventListener('click', function () {
+      vscode.postMessage({ type: 'themeCommand', id: 'addStarterThemes' });
     });
   }
 
