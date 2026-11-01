@@ -3,13 +3,22 @@
   "displayName": "MD Reader",
   "description": "A reading-focused, fully customizable Markdown viewer with independent multi-document support.",
   "version": "0.1.0",
-  "publisher": "md-reader-oss",
+  "publisher": "rupeshbhurke",
+  "author": {
+    "name": "Rupesh H Bhurke",
+    "email": "rupeshbhurke@yahoo.com",
+    "url": "https://github.com/rupeshbhurke"
+  },
   "license": "MIT",
   "icon": "media/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/md-reader/md-reader-vscode"
+    "url": "https://github.com/rupeshbhurke/md-reader-vscode"
   },
+  "bugs": {
+    "url": "https://github.com/rupeshbhurke/md-reader-vscode/issues"
+  },
+  "homepage": "https://github.com/rupeshbhurke/md-reader-vscode#readme",
   "engines": {
     "vscode": "^1.85.0"
   },

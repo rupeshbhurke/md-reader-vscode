@@ -6,3 +6,8 @@ tsconfig.json
 **/*.map
 PortingToMac
 .vscode
+windows-app/**
+scripts/**
+CLAUDE.md
+*.vsix
+out/test/**

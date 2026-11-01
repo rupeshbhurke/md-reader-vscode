@@ -16,8 +16,8 @@ Work in root `src/` unless task explicitly targets windows-app.
 - `npm run build` — `copy-assets` then bundle extension via esbuild → `out/extension.js` (what `vscode:prepublish` runs).
 - `npm run copy-assets` — copies mermaid's browser bundle + KaTeX's CSS/fonts from `node_modules` into `src/webview/vendor/` (gitignored, regenerated on every build — see `scripts/copy-vendor-assets.js`). Run this (or `npm run build`) after a fresh clone/`npm install`, or `reader.js`'s mermaid lazy-load and the KaTeX `<link>` in `buildShell` will 404.
 - `npm run watch` — esbuild in watch mode.
-- `npm run compile` — `tsc -p ./` type-check (also runs webview types etc, matches `pretest`).
-- `npm test` — runs `out/test/runTest.js` (compile first).
+- `npm run compile` — `tsc -p ./`. Covers `src/**/*.ts` only; `src/webview/reader.js` is plain JS and is **never** type-checked or bundled by anything — it ships as-is and is only exercised by actually opening a panel. Note this emits unbundled `out/*.js` over esbuild's `out/extension.js`, so re-run `npm run build` before packaging if you've run `compile` since.
+- `npm test` — **currently a stub**: there is no `src/test/`, no `out/test/runTest.js`, and no `@vscode/test-electron` dependency, so this command fails. There are no automated tests in this repo; verify changes by pressing F5 and exercising the Extension Development Host.
 - Debug: F5 in VS Code (uses `.vscode/launch.json`) launches Extension Development Host.
 - Package: `vsce package` (devDependency `@vscode/vsce`) produces the `.vsix`.
 
@@ -26,6 +26,8 @@ No lint script configured.
 ### windows-app
 
 - `cd windows-app && npm run dev` / `npm run build` (tsc + vite build + electron-builder → nsis installer).
+
+It has its own `node_modules` and lags the extension: it uses `marked-gfm-heading-id` and has no katex, mermaid, `marked-footnote`, or `github-slugger`. Don't assume feature parity or port code between the two by copy-paste.
 
 ## Architecture (VS Code extension)
 
