@@ -1,13 +1,14 @@
 # MD Reader roadmap
 
-Last updated: 2026-11-02 (Phases 1–5 released; Phase 6 implemented, awaiting a real-editor test and release). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
+Last updated: 2026-11-02 (Phases 1–6 released; v0.6.0 is the latest GitHub release). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
 
 ## Status
 
 | | |
 |---|---|
-| Latest release | `v0.5.0` (Phase 5: layouts and theme format v2) |
-| In flight | `feat/phase6-graphviz` — Phase 6, version `0.6.0`: Graphviz, large-document fix, starter tweaks. Implemented, 93 tests, checked in a browser harness; not yet tried in a real editor |
+| Latest release | `v0.6.0` (Phase 6: Graphviz, large-document fix, starter tweaks) |
+| In flight | nothing. Next candidates are the deferred items below |
+| Releases | GitHub release dates (UTC, all 2026-11-01): `v0.3.0` 18:47, `v0.3.1` 19:42, `v0.4.0` 20:25, `v0.5.0` 20:53, `v0.6.0` 21:10. `CHANGELOG.md` dates them 2026-11-02 (local time) |
 | Known issues | none open. The dead `mdReader.showTOC` setting found by the Phase 3 tests has been removed (the TOC always works) |
 | Not in place | verified Marketplace publisher and the `VSCE_PAT` / `OVSX_PAT` secrets (maintainer — see `docs/RELEASING.md`) |
 | Unresolved | F5 debugging crashed the extension host in Windsurf. It looked like a host problem, not this repo's code |
@@ -34,7 +35,7 @@ No new code.
 
 **Ships knowingly with:** no syntax colours in code blocks, and the light starter themes keeping dark code blocks as a workaround. This is existing behaviour, not a regression.
 
-## Phase 2 — 0.3.1: syntax highlighting (defect fix + format change) — DONE (v0.3.1)
+## Phase 2 — 0.3.1: syntax highlighting (defect fix + format change) — DONE (v0.3.1, 2026-11-01)
 
 - 2.1 ~~Ship the five highlight.js stylesheets~~ Done differently: syntax colours are CSS variables in `reader.css` (five palettes selected by `mdReader.codeTheme`), because a shipped stylesheet cannot be overridden by theme colours without `!important`. No vendor stylesheet is needed.
 - 2.2 Done: add ten optional syntax tokens to the theme format (keyword, string, comment, number, title, type, variable, attr, meta, built-in). A theme that sets them wins; otherwise the stylesheet applies.
@@ -51,7 +52,7 @@ No new code.
 
 *Ordering note:* doing Phase 3 before Phase 2 would have the format change arrive already guarded by tests. The current order fixes the visible defect sooner.
 
-## Phase 4 — 0.4.0: open without an editor — DONE (v0.4.0)
+## Phase 4 — 0.4.0: open without an editor — DONE (v0.4.0, 2026-11-01)
 
 - 4.1 Done: accept the URI from an Explorer right-click and load the document with `openTextDocument(uri)`, without opening a tab.
 - 4.2 Done: stop disposing the panel when the source editor closes (the `onDidCloseTextDocument` handler).
@@ -59,7 +60,7 @@ No new code.
 - Also done: Command Palette falls back to a file picker; multi-select in the Explorer opens several; task toggling saves when no editor has the file open; UTF-8 BOM and UTF-16 handled.
 - Done: `CLAUDE.md` architecture notes updated, and a test guards that closing an editor does not close the reader.
 
-## Phase 5 — 0.5.0: theme system v2 — IMPLEMENTED, awaiting release
+## Phase 5 — 0.5.0: theme system v2 — DONE (v0.5.0, 2026-11-01)
 
 - 5.1 Done as **layouts**, a second axis: heading font/weight/scale/spacing/rules, paragraph spacing and indent (6 ship). *Interpretation:* body font, size, line height and reading width are NOT part of a layout — they are the user's accessibility preferences and a layout must not override them.
 - 5.2 Done as **independent axes**: any colour theme with any layout (20 themes × 6 layouts from 26 small files). *Interpretation:* composition is the user's choice of two settings, not a theme file that references other files.
@@ -69,7 +70,7 @@ No new code.
 
 Not done, deliberately (candidates for later): user-created layouts and a layout editor; a theme that recommends a layout; a "reading style" preset pairing a theme with a layout; using `version` to offer updates to unmodified copies of starters.
 
-## Phase 6 — 0.6.0: diagrams, performance, starter tweaks — IMPLEMENTED, awaiting release
+## Phase 6 — 0.6.0: diagrams, performance, starter tweaks — DONE (v0.6.0, 2026-11-01)
 
 - 6.1 Done: Graphviz (` ```dot ` / ` ```graphviz `). *Interpretation:* rendered on the extension host with a bundled WebAssembly engine, not lazy-loaded in the webview like Mermaid — it also works in HTML export and PDF, and the CSP is unchanged. Cost: the package grows by about 1.4 MB; the engine loads on first use.
 - 6.2 Measured first, then fixed: host render of a 1.7 MB document took 66 s. Cause: `marked-footnote` is quadratic. Documents without `[^` now use a second `Marked` instance without it (0.6 s). **Not yet done:** documents that do use footnotes stay quadratic, and the webview side (putting a multi-megabyte HTML string into the DOM) was not measured.
