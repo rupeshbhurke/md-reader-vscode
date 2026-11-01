@@ -153,13 +153,9 @@
     // Typography
     if (cfg.fontFamily) {
       root.style.setProperty('--reader-font', cfg.fontFamily);
-      document.body.style.fontFamily = cfg.fontFamily;
     }
     if (cfg.fontSize) {
       root.style.setProperty('--reader-font-size', cfg.fontSize + 'px');
-      // Apply directly to body — VS Code's webview injects its own body { font-size }
-      // which overrides html inheritance. Inline style wins regardless.
-      document.body.style.fontSize = cfg.fontSize + 'px';
     }
     if (cfg.lineHeight) {
       root.style.setProperty('--reader-line-height', String(cfg.lineHeight));
@@ -228,7 +224,6 @@
         // Immediate local feedback
         if (key === 'fontSize') {
           displays.fontSize.textContent = val + 'px';
-          document.body.style.fontSize = val + 'px';
           document.documentElement.style.setProperty('--reader-font-size', val + 'px');
         } else if (key === 'lineHeight') {
           displays.lineHeight.textContent = val.toFixed(2);
@@ -245,7 +240,6 @@
         } else if (key === 'theme') {
           document.documentElement.setAttribute('data-theme', val);
         } else if (key === 'fontFamily') {
-          document.body.style.fontFamily = val;
           document.documentElement.style.setProperty('--reader-font', val);
         } else if (key === 'readingWidth') {
           document.documentElement.style.setProperty('--reader-max-width', WIDTH_MAP[val] || '760px');
@@ -786,7 +780,6 @@
     const size = delta === 0 ? 17 : Math.min(72, Math.max(10, current + delta));
     currentConfig.fontSize = size;
 
-    document.body.style.fontSize = size + 'px';
     document.documentElement.style.setProperty('--reader-font-size', size + 'px');
 
     const sizeInput = document.getElementById('set-size');

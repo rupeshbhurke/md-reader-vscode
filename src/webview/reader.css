@@ -135,16 +135,19 @@
 /* ── Reset & Base ──────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Fixed root size: the reading font size/family are applied to #reader-content
+   only, so rem/em-sized chrome (settings drawer, TOC, find bar) doesn't change
+   when the user adjusts reading typography. */
 html {
-  font-size: var(--font-size);
+  font-size: 16px;
   scroll-behavior: smooth;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-body);
-  line-height: var(--line-height);
+  font-family: var(--font-ui);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background var(--transition), color var(--transition);
@@ -217,6 +220,9 @@ body.blue-light-filter::after {
 #reader-content {
   width: 100%;
   max-width: var(--max-width);
+  font-family: var(--font-body);
+  font-size: var(--font-size);
+  line-height: var(--line-height);
 }
 
 /* First element never needs a top margin — the container padding provides spacing */
@@ -237,7 +243,7 @@ body.blue-light-filter::after {
   color: var(--text);
   margin-top: 2.4em;
   margin-bottom: 0.6em;
-  scroll-margin-top: 1rem;
+  scroll-margin-top: var(--font-size);
 }
 
 #reader-content h1 { font-size: 2em;   border-bottom: 2px solid var(--border); padding-bottom: 0.3em; }
@@ -315,7 +321,7 @@ h3:hover > .heading-anchor,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.9rem;
+  padding: calc(0.5 * var(--font-size)) calc(0.9 * var(--font-size));
   background: rgba(255,255,255,0.05);
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
@@ -354,7 +360,7 @@ h3:hover > .heading-anchor,
 
 .code-block pre {
   overflow-x: auto;
-  padding: 1.1rem 1.2rem;
+  padding: calc(1.1 * var(--font-size)) calc(1.2 * var(--font-size));
   margin: 0;
 }
 
@@ -374,7 +380,7 @@ h3:hover > .heading-anchor,
    code block so it's still legible either way. */
 pre.mermaid {
   margin: 1.5em 0;
-  padding: 1.1rem 1.2rem;
+  padding: calc(1.1 * var(--font-size)) calc(1.2 * var(--font-size));
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--surface);
