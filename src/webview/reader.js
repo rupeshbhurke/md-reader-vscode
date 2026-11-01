@@ -42,6 +42,7 @@
   // ── State ───────────────────────────────────────────────────────────────────
   let tocOpen = false;
   let currentConfig = {};
+  let themeTokens = [];          // [{key,label,group,vars}] - sent by the host with each 'update'
   let currentFileName = '';
   let currentWordCount = 0;
   let headingElements = [];
@@ -86,6 +87,7 @@
     const msg = event.data;
     switch (msg.type) {
       case 'update':
+        if (msg.themeTokens) { themeTokens = msg.themeTokens; buildThemeEditorRows(); }
         currentConfig = msg.config || {};
         currentFileName = msg.fileName || '';
         currentWordCount = msg.wordCount || 0;
@@ -146,9 +148,9 @@
     // Scroll sync flag
     scrollSyncEnabled = !!cfg.scrollSync;
 
-    // Theme
-    const theme = cfg.theme || 'auto';
-    root.setAttribute('data-theme', theme);
+    // Theme (built-in, or a custom theme = base theme + colour overrides)
+    rebuildThemeOptions(cfg);
+    applyTheme(cfg);
 
     // Typography
     if (cfg.fontFamily) {
@@ -180,6 +182,218 @@
     }
 
     syncSettingsUI(cfg);
+  }
+
+  // ── Themes (built-in + user-created) ────────────────────────────────────────
+  // A custom theme is `base` (a built-in data-theme) plus inline CSS variable
+  // overrides on <html> for just the tokens the user changed.
+
+  let appliedThemeVars = [];
+  // Editor working state. `dirty` = unsaved edits being live-previewed; while
+  // dirty, config broadcasts (e.g. dragging the font slider) must not wipe them.
+  const editor = { id: null, label: '', base: 'light', colors: {}, dirty: false };
+
+  function customThemeFor(cfg) {
+    const t = (cfg && cfg.theme) || '';
+    if (t.indexOf('custom:') !== 0) { return null; }
+    const id = t.slice(7);
+    const theme = cfg.customThemes && cfg.customThemes[id];
+    return theme ? { id: id, theme: theme } : null;
+  }
+
+  function setThemeVars(colors) {
+    const root = document.documentElement;
+    appliedThemeVars.forEach(function (v) { root.style.removeProperty(v); });
+    appliedThemeVars = [];
+    themeTokens.forEach(function (t) {
+      const val = colors[t.key];
+      if (!val) { return; }
+      t.vars.forEach(function (v) { root.style.setProperty(v, val); appliedThemeVars.push(v); });
+    });
+  }
+
+  function applyTheme(cfg) {
+    const root = document.documentElement;
+    const custom = customThemeFor(cfg);
+    if (editor.dirty) {
+      root.setAttribute('data-theme', editor.base);
+      setThemeVars(editor.colors);
+    } else {
+      root.setAttribute('data-theme', custom ? custom.theme.base : (cfg.theme || 'auto'));
+      setThemeVars(custom ? custom.theme.colors || {} : {});
+      loadEditorFrom(cfg, custom);
+    }
+    updateEditorButtons();
+  }
+
+  function rebuildThemeOptions(cfg) {
+    const sel = document.getElementById('set-theme');
+    if (!sel) { return; }
+    const ids = Object.keys(cfg.customThemes || {});
+    const signature = ids.map(function (id) { return id + ':' + cfg.customThemes[id].label; }).join('|');
+    if (sel.dataset.sig === signature) { return; }
+    sel.dataset.sig = signature;
+    Array.prototype.slice.call(sel.querySelectorAll('optgroup')).forEach(function (g) { g.remove(); });
+    if (ids.length) {
+      const group = document.createElement('optgroup');
+      group.label = 'My themes';
+      ids.forEach(function (id) {
+        const o = document.createElement('option');
+        o.value = 'custom:' + id;
+        o.textContent = cfg.customThemes[id].label;   // textContent: labels are user data
+        group.appendChild(o);
+      });
+      sel.appendChild(group);
+    }
+  }
+
+  function readVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // <input type=color> only takes #rrggbb; normalise whatever the CSS holds.
+  let hexCtx = null;
+  function toHex(value) {
+    if (/^#[0-9a-f]{6}$/i.test(value)) { return value.toLowerCase(); }
+    if (/^#[0-9a-f]{3,4}$/i.test(value)) {
+      return '#' + value.slice(1, 4).split('').map(function (c) { return c + c; }).join('').toLowerCase();
+    }
+    if (/^#[0-9a-f]{8}$/i.test(value)) { return value.slice(0, 7).toLowerCase(); }
+    hexCtx = hexCtx || document.createElement('canvas').getContext('2d');
+    hexCtx.fillStyle = '#000';
+    hexCtx.fillStyle = value;
+    const out = hexCtx.fillStyle;
+    if (/^#[0-9a-f]{6}$/i.test(out)) { return out.toLowerCase(); }
+    const m = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(out);
+    return m ? '#' + [m[1], m[2], m[3]].map(function (n) { return ('0' + Number(n).toString(16)).slice(-2); }).join('') : '#000000';
+  }
+
+  function buildThemeEditorRows() {
+    const host = document.getElementById('te-colors');
+    if (!host || host.dataset.built) { return; }
+    host.dataset.built = '1';
+    let lastGroup = '';
+    themeTokens.forEach(function (t) {
+      if (t.group !== lastGroup) {
+        lastGroup = t.group;
+        const h = document.createElement('div');
+        h.className = 'te-group';
+        h.textContent = t.group;
+        host.appendChild(h);
+      }
+      const row = document.createElement('div');
+      row.className = 'te-row';
+      row.dataset.key = t.key;
+      const label = document.createElement('span');
+      label.textContent = t.label;
+      const input = document.createElement('input');
+      input.type = 'color';
+      input.setAttribute('aria-label', t.label);
+      const reset = document.createElement('button');
+      reset.type = 'button';
+      reset.className = 'te-reset';
+      reset.textContent = '↺';
+      reset.title = 'Use the base theme colour';
+      row.appendChild(label); row.appendChild(input); row.appendChild(reset);
+      host.appendChild(row);
+
+      input.addEventListener('input', function () {
+        editor.colors[t.key] = input.value;
+        editor.dirty = true;
+        applyTheme(currentConfig);
+        refreshEditorRows();
+      });
+      reset.addEventListener('click', function () {
+        delete editor.colors[t.key];
+        editor.dirty = true;
+        applyTheme(currentConfig);
+        refreshEditorRows();
+      });
+    });
+    setupEditorControls();
+    if (currentConfig.theme) { applyTheme(currentConfig); }
+  }
+
+  // Show the colour each row currently renders as; ↺ only where overridden.
+  function refreshEditorRows() {
+    const host = document.getElementById('te-colors');
+    if (!host) { return; }
+    themeTokens.forEach(function (t) {
+      const row = host.querySelector('.te-row[data-key="' + t.key + '"]');
+      if (!row) { return; }
+      const overridden = !!editor.colors[t.key];
+      row.querySelector('input').value = toHex(editor.colors[t.key] || readVar(t.vars[0]) || '#000000');
+      row.classList.toggle('te-overridden', overridden);
+    });
+  }
+
+  // Load the editor from the persisted theme (not dirty).
+  function loadEditorFrom(cfg, custom) {
+    editor.id = custom ? custom.id : null;
+    editor.label = custom ? custom.theme.label : '';
+    editor.colors = custom ? Object.assign({}, custom.theme.colors) : {};
+    const t = (cfg.theme || 'auto');
+    editor.base = custom ? custom.theme.base
+      : (t === 'auto' ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : t);
+    const name = document.getElementById('te-name');
+    const base = document.getElementById('te-base');
+    if (name) { name.value = editor.label; }
+    if (base) { base.value = editor.base; }
+    refreshEditorRows();
+  }
+
+  function updateEditorButtons() {
+    const set = function (id, disabled) { const b = document.getElementById(id); if (b) { b.disabled = disabled; } };
+    set('te-delete', !editor.id);
+    set('te-export', !editor.id);
+    set('te-revert', !editor.dirty);
+  }
+
+  function setupEditorControls() {
+    const name = document.getElementById('te-name');
+    const base = document.getElementById('te-base');
+    const byId = function (id) { return document.getElementById(id); };
+    if (!name || name.dataset.wired) { return; }
+    name.dataset.wired = '1';
+
+    name.addEventListener('input', function () { editor.label = name.value; });
+    base.addEventListener('change', function () {
+      editor.base = base.value;
+      editor.dirty = true;
+      applyTheme(currentConfig);
+      refreshEditorRows();
+    });
+    const save = function (asNew) {
+      if (!name.value.trim()) { name.focus(); return; }
+      vscode.postMessage({
+        type: 'saveTheme',
+        id: asNew ? undefined : (editor.id || undefined),
+        label: name.value,
+        base: base.value,
+        colors: editor.colors
+      });
+      // The host saves + selects the theme, then broadcasts config; clearing
+      // `dirty` lets that broadcast reload the editor from what was saved.
+      editor.dirty = false;
+    };
+    byId('te-save').addEventListener('click', function () { save(false); });
+    byId('te-save-new').addEventListener('click', function () { save(true); });
+    byId('te-revert').addEventListener('click', function () {
+      editor.dirty = false;
+      applyTheme(currentConfig);
+    });
+    byId('te-delete').addEventListener('click', function () {
+      if (editor.id) { vscode.postMessage({ type: 'deleteTheme', id: editor.id }); }
+    });
+    byId('te-export').addEventListener('click', function () {
+      if (editor.id) { vscode.postMessage({ type: 'themeCommand', id: 'exportTheme', themeId: editor.id }); }
+    });
+    byId('te-export-all').addEventListener('click', function () {
+      vscode.postMessage({ type: 'themeCommand', id: 'exportThemes' });
+    });
+    byId('te-import').addEventListener('click', function () {
+      vscode.postMessage({ type: 'themeCommand', id: 'importThemes' });
+    });
   }
 
   // ── Settings UI ─────────────────────────────────────────────────────────────
@@ -241,7 +455,10 @@
             document.body.classList.remove('blue-light-filter');
           }
         } else if (key === 'theme') {
-          document.documentElement.setAttribute('data-theme', val);
+          // Picking another theme discards unsaved editor changes.
+          editor.dirty = false;
+          currentConfig.theme = val;
+          applyTheme(currentConfig);
         } else if (key === 'fontFamily') {
           document.documentElement.style.setProperty('--reader-font', val);
         } else if (key === 'readingWidth') {
@@ -375,7 +592,8 @@
   }
 
   function mermaidThemeFor(cfg) {
-    const theme = (cfg && cfg.theme) || 'auto';
+    const custom = customThemeFor(cfg);
+    const theme = custom ? custom.theme.base : ((cfg && cfg.theme) || 'auto');
     if (theme === 'dark') { return 'dark'; }
     if (theme === 'auto' && window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
       return 'dark';

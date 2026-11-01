@@ -1,12 +1,14 @@
 import * as vscode from 'vscode';
 import { PanelManager } from './panelManager';
 import { ConfigManager } from './configManager';
+import { ThemeManager } from './themeManager';
 
 let panelManager: PanelManager;
 
 export function activate(context: vscode.ExtensionContext) {
   const configManager = new ConfigManager();
-  panelManager = new PanelManager(context, configManager);
+  const themeManager = new ThemeManager(configManager);
+  panelManager = new PanelManager(context, configManager, themeManager);
   panelManager.setupScrollSync(context);
 
   // ── Commands ────────────────────────────────────────────────────────────────
@@ -52,7 +54,11 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.commands.registerCommand('mdReader.showShortcuts', () => {
       panelManager.postToActive({ type: 'toggleShortcuts' });
-    })
+    }),
+
+    vscode.commands.registerCommand('mdReader.exportThemes', () => themeManager.exportThemes()),
+    vscode.commands.registerCommand('mdReader.importThemes', () => themeManager.importThemes()),
+    vscode.commands.registerCommand('mdReader.deleteAllThemes', () => themeManager.deleteAll())
   );
 
   // ── Auto-refresh ─────────────────────────────────────────────────────────────

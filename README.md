@@ -15,6 +15,7 @@ That command-palette list and the in-panel `?` overlay are the two fastest ways 
 
 - 📖 **Multi-document support** — Open as many Markdown files as you want; each gets its own independent reader panel. No shared state, no conflicts.
 - 🎨 **4 themes** — Light, Dark, Sepia, and Auto (follows VS Code's color theme automatically), plus an adjustable amber **Eye Care** blue-light filter.
+- 🖌️ **Custom themes** — create, save, export and import your own colour themes; they live in your user settings, so they survive extension updates. See [Custom Themes](#custom-themes).
 - 🖊️ **Fully customizable typography** — Pick from curated font families (serif, sans-serif, monospace), any font size from 10px to 72px, and line height.
 - 📐 **6 reading widths** — Narrow, Medium, Wide, Wider, Ultra, and Full (100% window width).
 - 📋 **Table of Contents** — Auto-generated floating overlay with active heading highlight as you scroll.
@@ -82,6 +83,22 @@ Press `?` inside any reader panel to see this list without leaving it.
 | `?` | Toggle this shortcuts help |
 
 Single-key shortcuts (`j`, `k`, `t`, `s`, etc.) are disabled while focus is in the find box or a settings control, so typing there is unaffected.
+
+## Custom Themes
+
+Besides Auto, Light, Dark and Sepia you can create your own colour themes.
+
+**Create one:** open the settings drawer (gear icon or `s`) → expand **Customize theme**. Pick a *Based on* theme, change any of the 14 colours with the colour pickers (the page updates live as you go), give it a name and press **Save**. Only the colours you change are stored; everything else follows the base theme. The ↺ button next to a colour returns it to the base. **Save as new** keeps the original and saves a copy. Your themes appear under **My themes** in the Theme dropdown.
+
+**Export and import:** the **Export**, **Export all** and **Import…** buttons in the same panel (or the commands **MD Reader: Export Themes…** / **Import Themes…**) write and read `.json` theme files. Use them to back up your themes, move them to another machine, or share them. When an imported theme has the same id as one you already have, you choose once to **Replace**, **Keep both** or **Skip** for all of them.
+
+### Your themes and updates
+
+Custom themes are saved in your VS Code **user settings** (`mdReader.customThemes`), not inside the extension. That means:
+
+- **Updating the extension keeps your themes.** This holds for Marketplace updates and for installing a newer `.vsix` over the old one.
+- **Uninstalling leaves your themes in your settings**, so they are back if you reinstall. To remove them, run **MD Reader: Delete All Custom Themes…** *before* uninstalling (it offers to export a backup first), or delete the `mdReader.customThemes` entry from your settings.
+- Themes follow your VS Code settings: they sync if you use Settings Sync, but are per-profile, and VS Code, VS Code Insiders and other editors each keep their own copy. Export your themes if you need the same ones elsewhere.
 
 ## Font Families
 
@@ -163,7 +180,8 @@ All settings are under `mdReader.*` in VS Code Settings (`Ctrl+,`):
 
 | Setting | Default | Description |
 |---|---|---|
-| `mdReader.theme` | `auto` | Color theme: `auto` / `light` / `dark` / `sepia` |
+| `mdReader.theme` | `auto` | Color theme: `auto` / `light` / `dark` / `sepia`, or `custom:<id>` for one of your own |
+| `mdReader.customThemes` | `{}` | Your saved custom themes (normally edited from the settings drawer; see [Custom Themes](#custom-themes)) |
 | `mdReader.fontFamily` | `Georgia, 'Times New Roman', serif` | Body font family |
 | `mdReader.fontSize` | `17` | Base font size in px (10–72) |
 | `mdReader.lineHeight` | `1.85` | Line spacing multiplier |
@@ -196,6 +214,9 @@ Every command below is reachable via `Ctrl+Shift+P` under the **MD Reader** cate
 | Export as PDF... | — |
 | Export as HTML... | — |
 | Show Keyboard Shortcuts | Toolbar `$(question)`, `?` |
+| Export Themes... | Drawer → Customize theme → **Export all** |
+| Import Themes... | Drawer → Customize theme → **Import…** |
+| Delete All Custom Themes... | — (run before uninstalling to clear your themes) |
 
 ## Context Menus
 

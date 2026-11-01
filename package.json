@@ -2,7 +2,7 @@
   "name": "md-reader",
   "displayName": "MD Reader",
   "description": "A reading-focused, fully customizable Markdown viewer with independent multi-document support.",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "publisher": "rupeshbhurke",
   "author": {
     "name": "Rupesh H Bhurke",
@@ -96,6 +96,21 @@
         "title": "Show Keyboard Shortcuts",
         "icon": "$(question)",
         "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.exportThemes",
+        "title": "Export Themes...",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.importThemes",
+        "title": "Import Themes...",
+        "category": "MD Reader"
+      },
+      {
+        "command": "mdReader.deleteAllThemes",
+        "title": "Delete All Custom Themes...",
+        "category": "MD Reader"
       }
     ],
     "keybindings": [
@@ -160,21 +175,132 @@
       "title": "MD Reader",
       "properties": {
         "mdReader.theme": {
-          "type": "string",
           "default": "auto",
-          "enum": [
-            "auto",
-            "light",
-            "dark",
-            "sepia"
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "auto",
+                "light",
+                "dark",
+                "sepia"
+              ],
+              "enumDescriptions": [
+                "Follow VS Code's color theme",
+                "Light reading theme",
+                "Dark reading theme",
+                "Warm sepia reading theme"
+              ]
+            },
+            {
+              "type": "string",
+              "pattern": "^custom:[a-z0-9][a-z0-9-]{0,39}$",
+              "description": "A custom theme, as custom:<id>."
+            }
           ],
-          "enumDescriptions": [
-            "Follow VS Code's color theme",
-            "Light reading theme",
-            "Dark reading theme",
-            "Warm sepia reading theme"
-          ],
-          "description": "Color theme for the reader panel."
+          "description": "Color theme for the reader panel: a built-in theme, or custom:<id> for one you created (see mdReader.customThemes). An unknown or deleted custom theme falls back to Auto."
+        },
+        "mdReader.customThemes": {
+          "type": "object",
+          "default": {},
+          "markdownDescription": "Your own reader themes, keyed by id. Normally created and edited from the reader's Settings drawer (**Customize theme**). A theme stores a `base` (`light`, `dark` or `sepia`) plus only the colors you changed; anything unset comes from the base. Stored in user settings, so it survives extension updates and reinstalls. Use **MD Reader: Export Themes** / **Import Themes** to back up or share.",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "base"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "label": {
+                "type": "string",
+                "maxLength": 40
+              },
+              "base": {
+                "type": "string",
+                "enum": [
+                  "light",
+                  "dark",
+                  "sepia"
+                ]
+              },
+              "colors": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "bg": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "bgAlt": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "surface": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "border": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "text": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "textMuted": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "accent": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "selection": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "codeBg": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "codeText": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "preBg": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "preText": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "quoteBg": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  },
+                  "tableStripe": {
+                    "type": "string",
+                    "format": "color",
+                    "description": "CSS color: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl()."
+                  }
+                }
+              }
+            }
+          }
         },
         "mdReader.fontFamily": {
           "type": "string",

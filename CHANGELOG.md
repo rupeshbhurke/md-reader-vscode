@@ -6,6 +6,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.3.0] — 2026-11-01
+
+### Added
+- Custom themes: create, edit, save and delete your own colour themes from the settings drawer (**Customize theme**), with live preview and 14 themeable colours. A theme stores only the colours you changed plus a base theme.
+- Themes are stored in user settings (`mdReader.customThemes`), so they survive extension updates — including installing a newer `.vsix` over the old one — and uninstall/reinstall.
+- Export and import themes as `.json` files, one at a time or in bulk (**Export Themes…**, **Import Themes…**), with a single Replace / Keep both / Skip choice for conflicts.
+- **Delete All Custom Themes…** command (offers a backup export first) for a clean removal before uninstalling.
+- HTML export and Mermaid diagrams follow the selected custom theme.
+
+### Changed
+- `mdReader.theme` now also accepts `custom:<id>`; an unknown or deleted custom theme falls back to Auto.
+
+---
+
 ## [0.2.1] — 2026-11-01
 
 ### Fixed

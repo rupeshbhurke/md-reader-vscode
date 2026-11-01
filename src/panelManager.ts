@@ -3,6 +3,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { ConfigManager, ReaderConfig, SETTABLE_KEYS } from './configManager';
 import { renderMarkdown } from './markdownRenderer';
+import { ThemeManager } from './themeManager';
+import { THEME_TOKENS, effectiveBase, themeCss } from './themes';
 
 export class PanelManager {
   /** Map of document URI → webview panel */
@@ -19,7 +21,8 @@ export class PanelManager {
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly config: ConfigManager
+    private readonly config: ConfigManager,
+    private readonly themes: ThemeManager
   ) {}
 
   // ── Open ────────────────────────────────────────────────────────────────────
@@ -101,6 +104,15 @@ export class PanelManager {
         if ((SETTABLE_KEYS as readonly string[]).includes(msg.key)) {
           await this.config.set(msg.key as keyof ReaderConfig, msg.value);
         }
+      } else if (msg.type === 'saveTheme') {
+        await this.themes.save(msg);
+      } else if (msg.type === 'deleteTheme') {
+        await this.themes.delete(msg.id);
+      } else if (msg.type === 'themeCommand') {
+        // Whitelisted: the webview may only trigger these, never run arbitrary commands.
+        if (msg.id === 'exportTheme' && typeof msg.themeId === 'string') { await this.themes.exportThemes([msg.themeId]); }
+        else if (msg.id === 'exportThemes') { await this.themes.exportThemes(); }
+        else if (msg.id === 'importThemes') { await this.themes.importThemes(); }
       } else if (msg.type === 'toggleTask') {
         await this.toggleTask(document, msg.index, msg.checked);
       } else if (msg.type === 'openLink') {
@@ -177,6 +189,8 @@ export class PanelManager {
     if (!document) { return; }
 
     const cfg = this.config.get();
+    // A custom theme exports as its base theme + a :root override block.
+    const exportDataTheme = effectiveBase(cfg.theme, cfg.customThemes);
     const { html, hasMermaid } = await renderMarkdown(document.getText(), cfg.frontMatter);
     const embedImages = vscode.workspace.getConfiguration('mdReader')
       .get<boolean>('export.embedImages', true);
@@ -198,16 +212,17 @@ export class PanelManager {
     // still renders as valid HTML, just without KaTeX's custom glyphs.
     const mermaidScript = hasMermaid
       ? `<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <script>mermaid.initialize({ startOnLoad: true, theme: ${JSON.stringify(cfg.theme === 'dark' ? 'dark' : 'default')} });</script>`
+  <script>mermaid.initialize({ startOnLoad: true, theme: ${JSON.stringify(effectiveBase(cfg.theme, cfg.customThemes) === 'dark' ? 'dark' : 'default')} });</script>`
       : '';
 
     const standalone = `<!DOCTYPE html>
-<html lang="en" data-theme="${cfg.theme}">
+<html lang="en" data-theme="${exportDataTheme}">
 <head>
 <meta charset="UTF-8">
 <title>${escapeHtml(path.basename(document.fileName))}</title>
 <style>${readerCss}</style>
 <style>${katexCss}</style>
+<style>${themeCss(cfg.theme, cfg.customThemes)}</style>
 </head>
 <body>
 <main id="reader-main"><article id="reader-content">${content}</article></main>
@@ -322,7 +337,7 @@ ${mermaidScript}
     const cfg = this.config.get();
     const { html, toc, hasMermaid, wordCount } = await renderMarkdown(document.getText(), cfg.frontMatter);
     panel.webview.postMessage({
-      type: 'update', html, toc, hasMermaid, wordCount, config: cfg,
+      type: 'update', html, toc, hasMermaid, wordCount, config: cfg, themeTokens: THEME_TOKENS,
       fileName: path.basename(document.fileName),
     });
   }
@@ -461,6 +476,33 @@ ${mermaidScript}
           <option value="sepia">Sepia</option>
         </select>
       </div>
+
+      <details class="setting-group theme-editor" id="theme-editor">
+        <summary>Customize theme</summary>
+        <div class="theme-editor-body">
+          <label for="te-name">Name</label>
+          <input type="text" id="te-name" maxlength="40" placeholder="My theme" autocomplete="off">
+          <label for="te-base">Based on</label>
+          <select id="te-base">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="sepia">Sepia</option>
+          </select>
+          <div id="te-colors"></div>
+          <div class="te-buttons">
+            <button type="button" id="te-save" class="te-primary">Save</button>
+            <button type="button" id="te-save-new" title="Save as a new theme, keeping the original">Save as new</button>
+            <button type="button" id="te-revert">Revert</button>
+            <button type="button" id="te-delete">Delete</button>
+          </div>
+          <div class="te-buttons">
+            <button type="button" id="te-export" title="Export the selected custom theme to a .json file">Export</button>
+            <button type="button" id="te-export-all" title="Export every custom theme to one .json file">Export all</button>
+            <button type="button" id="te-import" title="Import theme .json files">Import…</button>
+          </div>
+          <p class="te-hint">Themes are saved in your VS Code user settings, so they survive extension updates.</p>
+        </div>
+      </details>
 
       <div class="setting-group">
         <label for="set-font">Font Family</label>
