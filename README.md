@@ -266,3 +266,12 @@ MIT — See [LICENSE](LICENSE) for details.
 ## Contributing
 
 Contributions are welcome! This project is open source under the MIT License.
+
+```bash
+npm ci                # install
+npm run build         # copy vendor assets + bundle the extension
+npm run compile       # type-check
+npm test              # run the test suite
+```
+
+Press **F5** in VS Code to launch an Extension Development Host. Every pull request runs the same checks in CI on Linux and Windows, and attaches the built `.vsix` so you can install it. To add a **theme**, drop a `*.mdtheme.json` file into [`themes/`](themes) (the tests check its colours and contrast). Releases are described in [docs/RELEASING.md](docs/RELEASING.md).

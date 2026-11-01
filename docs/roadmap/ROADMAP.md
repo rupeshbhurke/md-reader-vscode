@@ -1,15 +1,15 @@
 # MD Reader roadmap
 
-Last updated: 2026-11-02 (Phase 1 complete, Phase 2 implemented). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
+Last updated: 2026-11-02 (Phases 1 and 2 released; Phase 3 implemented, awaiting merge and the maintainer's store setup). This is a working plan, not a promise: scope and order can change. Version numbers follow [semantic versioning](https://semver.org/) (patch = fixes, minor = features).
 
 ## Status
 
 | | |
 |---|---|
-| Latest release | `v0.3.0` (2026-11-01) |
-| In flight | `feat/syntax-highlighting` — Phase 2, version `0.3.1`: syntax highlighting fix, syntax colours in themes. Implemented and checked in a browser harness; not yet tested in a real editor |
-| Known defect | none open. The code-block syntax-colour defect is fixed in `0.3.1` (pending merge and release) |
-| Not in place | tests, CI on pull requests, Open VSX publishing, verified Marketplace publisher |
+| Latest release | `v0.3.1` |
+| In flight | `chore/foundation-tests-ci` — Phase 3: test suite, CI, Open VSX and draft releases. No user-visible change, no release of its own |
+| Known issues | `mdReader.showTOC` is declared and documented but nothing reads it (the TOC works regardless) — found by the new tests, tracked in `KNOWN_UNUSED` in `test/project.test.js`. Decide: wire it up or remove it |
+| Not in place | verified Marketplace publisher and the `VSCE_PAT` / `OVSX_PAT` secrets (maintainer — see `docs/RELEASING.md`) |
 | Unresolved | F5 debugging crashed the extension host in Windsurf. It looked like a host problem, not this repo's code |
 
 ## Decisions (2026-11-02)
@@ -34,20 +34,20 @@ No new code.
 
 **Ships knowingly with:** no syntax colours in code blocks, and the light starter themes keeping dark code blocks as a workaround. This is existing behaviour, not a regression.
 
-## Phase 2 — 0.3.1: syntax highlighting (defect fix + format change) — IMPLEMENTED, awaiting release
+## Phase 2 — 0.3.1: syntax highlighting (defect fix + format change) — DONE (v0.3.1)
 
 - 2.1 ~~Ship the five highlight.js stylesheets~~ Done differently: syntax colours are CSS variables in `reader.css` (five palettes selected by `mdReader.codeTheme`), because a shipped stylesheet cannot be overridden by theme colours without `!important`. No vendor stylesheet is needed.
 - 2.2 Done: add ten optional syntax tokens to the theme format (keyword, string, comment, number, title, type, variable, attr, meta, built-in). A theme that sets them wins; otherwise the stylesheet applies.
 - 2.3 Done: give all 20 starter themes matching syntax colours, and drop the dark-code-block workaround from the light ones.
 - 2.4 Done (as scripts; becomes real tests in Phase 3): extend the checks to cover the new tokens, including contrast of code text on code background.
 
-## Phase 3 — Foundation (no user-visible change; rides along with any version)
+## Phase 3 — Foundation (no user-visible change; rides along with any version) — IMPLEMENTED, 3.5 pending (maintainer)
 
-- 3.1 Real `npm test`: validation, hostile input, export/import round-trip, contrast thresholds, token list matching the `package.json` schema. This also repairs `npm test`, which is currently a failing stub.
-- 3.2 CI on every pull request: build, type-check, test.
-- 3.3 Publish to Open VSX as well as the Marketplace (Windsurf and VSCodium install from Open VSX).
-- 3.4 Draft releases that publish only once all builds pass.
-- 3.5 **Maintainer, and blocking:** confirm the `rupeshbhurke` publisher ID on the Marketplace and add the `VSCE_PAT` repository secret. Until then, releases are GitHub downloads only.
+- 3.1 Done: real `npm test`: validation, hostile input, export/import round-trip, contrast thresholds, token list matching the `package.json` schema. This also repaired `npm test`, which was a failing stub. It immediately found a dead setting (`showTOC`) and missing highlight.js styles for HTML tags, CSS selectors and Markdown inline code.
+- 3.2 Done: CI on every pull request (Linux + Windows): type-check, test, build, package; the `.vsix` is attached as an artifact.
+- 3.3 Done (activates once 3.5 secrets exist): publish to Open VSX as well as the Marketplace, for editors that use Open VSX instead of the Microsoft Marketplace.
+- 3.4 Done: draft releases that publish only once verification and every store publish succeed; hyphenated tags are GitHub pre-releases only. See `docs/RELEASING.md`.
+- 3.5 **Maintainer, and blocking:** confirm the `rupeshbhurke` publisher ID on the Marketplace and add the `VSCE_PAT` repository secret. Also create the Open VSX namespace and add `OVSX_PAT`. Until then, releases are GitHub downloads only. Steps are in `docs/RELEASING.md`.
 
 *Ordering note:* doing Phase 3 before Phase 2 would have the format change arrive already guarded by tests. The current order fixes the visible defect sooner.
 

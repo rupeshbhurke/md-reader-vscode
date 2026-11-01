@@ -6,6 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Changed (no user-visible change)
+- Real automated tests (`npm test`, Node's built-in runner): theme validation and the export/import format, starter-theme contrast, highlight.js token styling, settings/command/manifest consistency, and version/CHANGELOG agreement.
+- CI on every pull request (type-check, test, build, package on Linux and Windows) with the `.vsix` attached as a downloadable artifact.
+- Release workflow now creates a draft GitHub release, publishes to the VS Code Marketplace and Open VSX when their tokens are configured, and only then publishes the release; hyphenated tags (`v0.4.0-beta.1`) are GitHub pre-releases only. See `docs/RELEASING.md`.
+- `npm run compile` is now a pure type-check (`--noEmit`); it no longer overwrites the bundled `out/extension.js`.
+
+### Fixed
+- Highlight.js token classes for HTML tags, CSS selectors and Markdown inline code had no style rule and rendered uncoloured; found by the new tests.
+
+---
+
 ## [0.3.1] — 2026-11-02
 
 ### Fixed
