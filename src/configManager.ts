@@ -18,7 +18,6 @@ export interface ReaderConfig {
   fontSize: number;
   lineHeight: number;
   readingWidth: ReadingWidth;
-  showTOC: boolean;
   codeTheme: string;
   scrollSync: boolean;
   blueLightFilter: number;
@@ -31,7 +30,7 @@ export interface ReaderConfig {
 /**
  * Settings the settings-drawer webview is allowed to write back via an
  * `updateSetting` message. Deliberately excludes fields with no drawer
- * control (showTOC, codeTheme, openBeside) — those are only ever set
+ * control (codeTheme, openBeside) — those are only ever set
  * through the Settings UI (`vscode.workspace.getConfiguration`) or command
  * palette, never from webview-supplied input.
  */
@@ -48,7 +47,6 @@ const DEFAULTS: ReaderConfig = {
   fontSize: 17,
   lineHeight: 1.85,
   readingWidth: 'medium',
-  showTOC: true,
   codeTheme: 'github-dark',
   scrollSync: false,
   blueLightFilter: 0,
